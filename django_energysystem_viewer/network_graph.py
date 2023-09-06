@@ -22,7 +22,7 @@ def generate_trace(sector, algorithm):
     """
 
     # load the process set, change the path if necessary
-    updated_process_set = pd.read_excel(settings.MODEL_STRUCTURE_FILE, "Process_Set")
+    updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
 
     filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector)]
 
