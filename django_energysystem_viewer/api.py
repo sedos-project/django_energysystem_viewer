@@ -2,7 +2,7 @@ from ninja import NinjaAPI
 
 from django_energysystem_viewer import network_graph
 
-api = NinjaAPI()
+api = NinjaAPI(urls_namespace="energysystem_viewer")
 
 
 @api.get("/network")
