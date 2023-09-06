@@ -12,6 +12,7 @@ python = "^3.10"
 plotly = "^5.16.1"
 django-ninja = "^0.22.2"
 pandas = "^2.1.0"
+python-igraph = "^0.10.6"
 
 
 [tool.poetry.group.dev.dependencies]
