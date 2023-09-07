@@ -1,0 +1,21 @@
+{" load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="energysystem,network" />
+        <meta name="description" content="Network graph for given energysystem" />
+        <title>Title</title>
+    </head>
+    <body>
+        <select hx-get="/energysystem/network_graph"
+                hx-trigger="changed"
+                hx-target="#graph">
+            <option value="dav"></option>
+            <option value="drl"></option>
+            <option value="fr"></option>
+        </select>
+        <div id="graph"></div>
+        <script src="{% static 'libs/htmx.min.js' %}"></script>
+    </body>
+</html>
