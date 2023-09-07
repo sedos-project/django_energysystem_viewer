@@ -1,21 +1,29 @@
-# Django Comparison Dashboard
+# Django Energysystem Viewer
 
-This app holds functionality to examine and compare scenario data from various sources (OEP, databus, CSVs).  
+This app holds functionality to examine energysystem network, aggregations and search abbreviations.
 
 ## Installation
 
 Install app via pip (currently only as GitHub dependency):
 
 ```bash
-pip install git+https://github.com/OpenEnergyPlatform/django-comparison-dashboard
+pip install git+https://github.com/sedos-project/django_energysystem_viewer.git
 ```
 
 Add app to your installed apps in django project settings:
+
 ```python
 DJANGO_APPS = [
     ...,
-    "django-comparison-dashboard",
+    "django_energysystem_viewer",
 ]
 ```
 
+and add related urls in project urls.py like:
 
+```python
+urlpatterns = [
+    ...,
+    path("", include("django_energysystem_viewer.urls")),
+]
+```
