@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="energysystem,network" />
+        <meta name="description" content="Network graph for given energysystem" />
+        <title>Title</title>
+    </head>
+    <body>
+        Network Graph
+        <select hx-get="/energysystem/network_graph" hx-target="#graph">
+            <option label="dav" value="dav"></option>
+            <option label="drl" value="drl"></option>
+            <option label="fr" value="fr"></option>
+        </select>
+        <div id="graph"></div>
+        <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+    </body>
+</html>
