@@ -8,4 +8,5 @@ app_name = "django_energysystem_viewer"
 urlpatterns = [
     path("energysystem/network/", views.NetworkView.as_view()),
     path("energysystem/network_graph/", views.network_graph),
+    path("energysystem/aggregation_graph/", views.aggregation_graph),
 ]
