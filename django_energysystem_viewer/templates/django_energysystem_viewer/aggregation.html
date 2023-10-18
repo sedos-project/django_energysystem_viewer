@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="energysystem,aggregation" />
+        <meta name="description" content="Aggregation graph for given energysystem" />
+        <title>Title</title>
+    </head>
+    <body>
+        <h1>Aggregation Graph</h1>
+            <div id="cytoscape-container" style="width: 100%; height: 600px;"></div>
+        <script src="{% static 'django_energysystem_viewer/libs/cytoscape.min.js' %}"></script>
+        <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+        <script src="{% static 'js/aggregation_graph.js' %}"></script>
+    </body>
+</html>
