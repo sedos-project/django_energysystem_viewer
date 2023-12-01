@@ -194,7 +194,7 @@ files = [
 
 [[package]]
 name = "data-adapter"
-version = "0.15.0"
+version = "0.16.0"
 description = "Provides general functionality for other data adapters"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
@@ -213,7 +213,7 @@ sqlalchemy = "^1.4.46"
 type = "git"
 url = "https://github.com/sedos-project/data_adapter"
 reference = "main"
-resolved_reference = "5cd53cacc4ea0d4f16b5f71531e920802d81a6e2"
+resolved_reference = "8803d77c04688a23c6e4f70545646a0c419d47a5"
 
 [[package]]
 name = "distlib"
