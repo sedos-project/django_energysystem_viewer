@@ -1,21 +1,54 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="keywords" content="energysystem,data,artifacts" />
-        <meta name="description" content="Artifacts of given collection" />
-        <title>Title</title>
-    </head>
-    <body>
-        <h1>Collection "{{ collection_name }}"</h1>
-        {% regroup artifacts by group as artifacts_grouped %}
-        {% for group in artifacts_grouped %}
-            <h2>{{ group.grouper }}</h2>
-            <ul>
-                {% for artifact in group.list %}<li>{{ artifact.artifact }} ({{ artifact.version }})</li>{% endfor %}
-            </ul>
-        {% endfor %}
-        <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
-    </body>
-</html>
+{% block javascript %}
+    {{ block.super }}
+    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+{% endblock javascript %}
+{% block content %}
+    <h1>Collection "{{ collection_name }}"</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                {% regroup artifacts by group as artifacts_grouped %}
+                {% for group in artifacts_grouped %}
+                    <h2>{{ group.grouper }}</h2>
+                    <ul>
+                        {% for artifact in group.list %}<li>{{ artifact.artifact }} ({{ artifact.version }})</li>{% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
+            <div class="col">
+                <nav>
+                    <div class="nav nav-tabs" role="tablist">
+                        <button class="nav-link active"
+                                id="artifact-data-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#artifact-data"
+                                type="button"
+                                role="tab"
+                                aria-controls="artifact-data"
+                                aria-selected="true">Data</button>
+                        <button class="nav-link"
+                                id="artifact-metadata-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#artifact-metadata"
+                                type="button"
+                                role="tab"
+                                aria-controls="artifact-metadata"
+                                aria-selected="false">Metadata</button>
+                    </div>
+                </nav>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active"
+                         id="artifact-data"
+                         role="tabpanel"
+                         aria-labelledby="artifact-data-tab">Select artifact to show related data</div>
+                    <div class="tab-pane fade"
+                         id="artifact-metadata"
+                         role="tabpanel"
+                         aria-labelledby="artifact-metadata-tab">Select artifact to show related metadata</div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
