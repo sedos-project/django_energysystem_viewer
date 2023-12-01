@@ -58,7 +58,7 @@ skip_glob = ["**/migrations/*.py"]
 # ==== djLint ====
 [tool.djlint]
 indent=2
-
+blank_line_after_tag="load,extends,endblock"
 
 # ==== ruff ====
 [tool.ruff]
