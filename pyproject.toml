@@ -55,6 +55,12 @@ skip = ["venv/"]
 skip_glob = ["**/migrations/*.py"]
 
 
+# ==== djLint ====
+[tool.djlint]
+indent=2
+
+
+# ==== ruff ====
 [tool.ruff]
 line-length = 120
 select = ["ALL"]
