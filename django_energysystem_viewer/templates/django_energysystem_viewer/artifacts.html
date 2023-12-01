@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="energysystem,data,artifacts" />
+        <meta name="description" content="Artifacts of given collection" />
+        <title>Title</title>
+    </head>
+    <body>
+        <h1>Collection "{{ collection_name }}"</h1>
+        {% regroup artifacts by group as artifacts_grouped %}
+        {% for group in artifacts_grouped %}
+            <h2>{{ group.grouper }}</h2>
+            <ul>
+                {% for artifact in group.list %}<li>{{ artifact.artifact }} ({{ artifact.version }})</li>{% endfor %}
+            </ul>
+        {% endfor %}
+        <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+    </body>
+</html>
