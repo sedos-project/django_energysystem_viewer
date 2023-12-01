@@ -2,7 +2,8 @@
 {% load static %}
 {% block javascript %}
   {{ block.super }}
-  <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+  <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
 {% endblock javascript %}
 {% block content %}
   <h1>Collection "{{ collection_name }}"</h1>
@@ -13,7 +14,17 @@
         {% for group in artifacts_grouped %}
           <h2>{{ group.grouper }}</h2>
           <ul>
-            {% for artifact in group.list %}<li>{{ artifact.artifact }} ({{ artifact.version }})</li>{% endfor %}
+            {% for artifact in group.list %}
+              <li>
+                <button class="btn btn-link"
+                        hx-ext="multi-swap"
+                        hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
+                        hx-trigger="click"
+                        hx-swap="multi:#artifact-data,#artifact-metadata">
+                  {{ artifact.artifact }} ({{ artifact.version }})
+                </button>
+              </li>
+            {% endfor %}
           </ul>
         {% endfor %}
       </div>

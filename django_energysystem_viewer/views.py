@@ -22,3 +22,15 @@ class ArtifactsView(TemplateView):
         collection_name = kwargs["collection_name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
         return {"collection_name": collection_name, "artifacts": artifacts}
+
+
+class ArtifactDataView(TemplateView):
+    template_name = "django_energysystem_viewer/artifact_data.html"
+
+    def get_context_data(self, **kwargs):
+        collection_name = kwargs["collection_name"]
+        group_name = kwargs["group_name"]
+        artifact_name = kwargs["artifact_name"]
+        version = kwargs.get("version")
+        artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
+        return {"data": artifact.data.to_html(), "metadata": artifact.metadata}
