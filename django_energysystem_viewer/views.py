@@ -1,3 +1,4 @@
+import json2table
 from data_adapter import collection
 from django.http import HttpResponse
 from django.views.generic import TemplateView
@@ -33,4 +34,4 @@ class ArtifactDataView(TemplateView):
         artifact_name = kwargs["artifact_name"]
         version = kwargs.get("version")
         artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
-        return {"data": artifact.data.to_html(), "metadata": artifact.metadata}
+        return {"data": artifact.data.to_html(), "metadata": json2table.convert(artifact.metadata)}
