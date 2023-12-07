@@ -33,19 +33,27 @@ class ProcessesView(TemplateView):
         process_name = self.request.GET.get("process")
         if process_name:
             process = preprocessing.get_process(collection_name, process_name)
+            artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
+            context["artifacts"] = artifacts
             context["scalars"] = process.scalars.to_html()
             context["timeseries"] = process.timeseries.to_html()
         return context
 
 
-class ProcessDataView(TemplateView):
-    template_name = "django_energysystem_viewer/process_data.html"
+class ProcessDetailView(TemplateView):
+    template_name = "django_energysystem_viewer/process_detail.html"
 
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]
         process_name = kwargs["process_name"]
         process = preprocessing.get_process(collection_name, process_name)
-        return {"scalars": process.scalars.to_html(), "timeseries": process.timeseries.to_html()}
+        artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
+        return {
+            "collection_name": collection_name,
+            "artifacts": artifacts,
+            "scalars": process.scalars.to_html(),
+            "timeseries": process.timeseries.to_html(),
+        }
 
 
 class ArtifactsView(TemplateView):

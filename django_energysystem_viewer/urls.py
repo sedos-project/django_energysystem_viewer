@@ -12,7 +12,7 @@ urlpatterns = [
     path("collection/<str:collection_name>/processes/", views.ProcessesView.as_view(), name="processes"),
     path(
         "collection/<str:collection_name>/process/<str:process_name>/data/",
-        views.ProcessDataView.as_view(),
+        views.ProcessDetailView.as_view(),
     ),
     path("collection/<str:collection_name>/artifacts/", views.ArtifactsView.as_view(), name="artifacts"),
     path(
