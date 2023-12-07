@@ -1,5 +1,5 @@
 import json2table
-from data_adapter import collection
+from data_adapter import collection, preprocessing
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 
@@ -14,6 +14,25 @@ def network_graph(request):
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     return HttpResponse(ng.generate_Graph(sectors, mapping).to_html())
+
+
+class ProcessesView(TemplateView):
+    template_name = "django_energysystem_viewer/processes.html"
+
+    def get_context_data(self, **kwargs):
+        collection_name = kwargs["collection_name"]
+        processes = collection.get_processes_from_collection(collection_name)
+        return {"collection_name": collection_name, "processes": processes}
+
+
+class ProcessDataView(TemplateView):
+    template_name = "django_energysystem_viewer/process_data.html"
+
+    def get_context_data(self, **kwargs):
+        collection_name = kwargs["collection_name"]
+        process_name = kwargs["process_name"]
+        process = preprocessing.get_process(collection_name, process_name)
+        return {"scalars": process.scalars.to_html(), "timeseries": process.timeseries.to_html()}
 
 
 class ArtifactsView(TemplateView):

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+  <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
+{% endblock javascript %}
+
+{% block content %}
+  <h1>Collection "{{ collection_name }}"</h1>
+  <div class="container">
+    <div class="row">
+      <div class="col">
+        <ul>
+          {% for process in processes %}
+            <li>
+              <button class="btn btn-link"
+                      hx-ext="multi-swap"
+                      hx-get="/collection/{{ collection_name }}/process/{{ process }}/data"
+                      hx-trigger="click"
+                      hx-swap="multi:#process-scalars,#process-timeseries">{{ process }}</button>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="col">
+        <nav>
+          <div class="nav nav-tabs" role="tablist">
+            <button class="nav-link active"
+                    id="process-scalars-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#process-scalars"
+                    type="button"
+                    role="tab"
+                    aria-controls="process-scalars"
+                    aria-selected="true">Scalars</button>
+            <button class="nav-link"
+                    id="process-timeseries-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#process-timeseries"
+                    type="button"
+                    role="tab"
+                    aria-controls="process-timeseries"
+                    aria-selected="false">Timeseries</button>
+          </div>
+        </nav>
+        <div class="tab-content">
+          <div class="tab-pane fade show active"
+               id="process-scalars"
+               role="tabpanel"
+               aria-labelledby="process-scalars-tab">Select process to show related scalar data</div>
+          <div class="tab-pane fade"
+               id="process-timeseries"
+               role="tabpanel"
+               aria-labelledby="process-timeseries-tab">Select process to show related timeseries data</div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
