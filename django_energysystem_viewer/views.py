@@ -1,5 +1,5 @@
 import json2table
-from data_adapter import collection, preprocessing
+from data_adapter import collection, preprocessing, settings
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 
@@ -14,6 +14,13 @@ def network_graph(request):
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     return HttpResponse(ng.generate_Graph(sectors, mapping).to_html())
+
+
+class CollectionsView(TemplateView):
+    template_name = "django_energysystem_viewer/collections.html"
+
+    def get_context_data(self, **kwargs):
+        return {"collections": [file.name for file in settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
 
 
 class ProcessesView(TemplateView):
