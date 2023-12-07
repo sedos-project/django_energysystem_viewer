@@ -62,6 +62,9 @@ class ArtifactsView(TemplateView):
         version = self.request.GET.get("version")
         if artifact_name and group_name:
             artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
+            context["processes"] = collection.get_collection_meta(collection_name)["artifacts"][group_name][
+                artifact_name
+            ]["names"]
             context["data"] = artifact.data.to_html()
             context["metadata"] = json2table.convert(artifact.metadata)
         return context
@@ -76,4 +79,11 @@ class ArtifactDataView(TemplateView):
         artifact_name = kwargs["artifact_name"]
         version = kwargs.get("version")
         artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
-        return {"data": artifact.data.to_html(), "metadata": json2table.convert(artifact.metadata)}
+        return {
+            "collection_name": collection_name,
+            "processes": collection.get_collection_meta(collection_name)["artifacts"][group_name][artifact_name][
+                "names"
+            ],
+            "data": artifact.data.to_html(),
+            "metadata": json2table.convert(artifact.metadata),
+        }

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load static %}
+{% load static partials %}
 
 {% block javascript %}
   {{ block.super }}
@@ -23,7 +23,7 @@
                         hx-ext="multi-swap"
                         hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
                         hx-trigger="click"
-                        hx-swap="multi:#artifact-data,#artifact-metadata">
+                        hx-swap="multi:#artifact-processes,#artifact-data,#artifact-metadata">
                   {{ artifact.artifact }} ({{ artifact.version }})
                 </button>
               </li>
@@ -33,6 +33,7 @@
       </div>
       <div class="col">
         <h2>Artifact data</h2>
+        {% include "django_energysystem_viewer/artifact_data.html#processes" %}
         <nav>
           <div class="nav nav-tabs" role="tablist">
             <button class="nav-link active"
@@ -53,28 +54,7 @@
                     aria-selected="false">Metadata</button>
           </div>
         </nav>
-        <div class="tab-content">
-          <div class="tab-pane fade show active"
-               id="artifact-data"
-               role="tabpanel"
-               aria-labelledby="artifact-data-tab">
-            {% if data %}
-              {{ data | safe }}
-            {% else %}
-              Select artifact to show related data
-            {% endif %}
-          </div>
-          <div class="tab-pane fade"
-               id="artifact-metadata"
-               role="tabpanel"
-               aria-labelledby="artifact-metadata-tab">
-            {% if metadata %}
-              {{ metadata | safe }}
-            {% else %}
-              Select artifact to show related metadata
-            {% endif %}
-          </div>
-        </div>
+        <div class="tab-content">{% include "django_energysystem_viewer/artifact_data.html#artifact_data" %}</div>
       </div>
     </div>
   </div>
