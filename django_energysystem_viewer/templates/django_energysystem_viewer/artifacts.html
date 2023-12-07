@@ -32,6 +32,7 @@
         {% endfor %}
       </div>
       <div class="col">
+        <h2>Artifact data</h2>
         <nav>
           <div class="nav nav-tabs" role="tablist">
             <button class="nav-link active"
@@ -56,11 +57,23 @@
           <div class="tab-pane fade show active"
                id="artifact-data"
                role="tabpanel"
-               aria-labelledby="artifact-data-tab">Select artifact to show related data</div>
+               aria-labelledby="artifact-data-tab">
+            {% if data %}
+              {{ data | safe }}
+            {% else %}
+              Select artifact to show related data
+            {% endif %}
+          </div>
           <div class="tab-pane fade"
                id="artifact-metadata"
                role="tabpanel"
-               aria-labelledby="artifact-metadata-tab">Select artifact to show related metadata</div>
+               aria-labelledby="artifact-metadata-tab">
+            {% if metadata %}
+              {{ metadata | safe }}
+            {% else %}
+              Select artifact to show related metadata
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>

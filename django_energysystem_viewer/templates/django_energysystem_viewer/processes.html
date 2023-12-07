@@ -26,6 +26,7 @@
         </ul>
       </div>
       <div class="col">
+        <h2>Process data</h2>
         <nav>
           <div class="nav nav-tabs" role="tablist">
             <button class="nav-link active"
@@ -50,11 +51,23 @@
           <div class="tab-pane fade show active"
                id="process-scalars"
                role="tabpanel"
-               aria-labelledby="process-scalars-tab">Select process to show related scalar data</div>
+               aria-labelledby="process-scalars-tab">
+            {% if scalars %}
+              {{ scalars | safe }}
+            {% else %}
+              Select process to show related scalar data
+            {% endif %}
+          </div>
           <div class="tab-pane fade"
                id="process-timeseries"
                role="tabpanel"
-               aria-labelledby="process-timeseries-tab">Select process to show related timeseries data</div>
+               aria-labelledby="process-timeseries-tab">
+            {% if timeseries %}
+              {{ timeseries | safe }}
+            {% else %}
+              Select process to show related timeseries data
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>

@@ -29,7 +29,13 @@ class ProcessesView(TemplateView):
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]
         processes = collection.get_processes_from_collection(collection_name)
-        return {"collection_name": collection_name, "processes": processes}
+        context = {"collection_name": collection_name, "processes": processes}
+        process_name = self.request.GET.get("process")
+        if process_name:
+            process = preprocessing.get_process(collection_name, process_name)
+            context["scalars"] = process.scalars.to_html()
+            context["timeseries"] = process.timeseries.to_html()
+        return context
 
 
 class ProcessDataView(TemplateView):
@@ -48,7 +54,17 @@ class ArtifactsView(TemplateView):
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
-        return {"collection_name": collection_name, "artifacts": artifacts}
+        context = {"collection_name": collection_name, "artifacts": artifacts}
+
+        # If specific artifact is queried
+        artifact_name = self.request.GET.get("artifact")
+        group_name = self.request.GET.get("group")
+        version = self.request.GET.get("version")
+        if artifact_name and group_name:
+            artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
+            context["data"] = artifact.data.to_html()
+            context["metadata"] = json2table.convert(artifact.metadata)
+        return context
 
 
 class ArtifactDataView(TemplateView):
