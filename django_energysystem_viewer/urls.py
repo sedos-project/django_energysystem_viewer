@@ -17,10 +17,10 @@ urlpatterns = [
     path("collection/<str:collection_name>/artifacts/", views.ArtifactsView.as_view(), name="artifacts"),
     path(
         "collection/<str:collection_name>/artifact/<str:group_name>/<str:artifact_name>/data/",
-        views.ArtifactDataView.as_view(),
+        views.ArtifactDetailView.as_view(),
     ),
     path(
         "collection/<str:collection_name>/artifact/<str:group_name>/<str:artifact_name>/<str:version>/data/",
-        views.ArtifactDataView.as_view(),
+        views.ArtifactDetailView.as_view(),
     ),
 ]

@@ -31,31 +31,7 @@
           </ul>
         {% endfor %}
       </div>
-      <div class="col">
-        <h2>Artifact data</h2>
-        {% include "django_energysystem_viewer/artifact_data.html#processes" %}
-        <nav>
-          <div class="nav nav-tabs" role="tablist">
-            <button class="nav-link active"
-                    id="artifact-data-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#artifact-data"
-                    type="button"
-                    role="tab"
-                    aria-controls="artifact-data"
-                    aria-selected="true">Data</button>
-            <button class="nav-link"
-                    id="artifact-metadata-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#artifact-metadata"
-                    type="button"
-                    role="tab"
-                    aria-controls="artifact-metadata"
-                    aria-selected="false">Metadata</button>
-          </div>
-        </nav>
-        <div class="tab-content">{% include "django_energysystem_viewer/artifact_data.html#artifact_data" %}</div>
-      </div>
+      <div class="col">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
     </div>
   </div>
 {% endblock content %}

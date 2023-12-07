@@ -70,8 +70,8 @@ class ArtifactsView(TemplateView):
         return context
 
 
-class ArtifactDataView(TemplateView):
-    template_name = "django_energysystem_viewer/artifact_data.html"
+class ArtifactDetailView(TemplateView):
+    template_name = "django_energysystem_viewer/artifact_detail.html"
 
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]

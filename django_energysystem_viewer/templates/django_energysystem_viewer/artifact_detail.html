@@ -1,6 +1,6 @@
 {% load partials %}
 
-{% startpartial processes inline=True %}
+<h2>Artifact data</h2>
 <div id="artifact-processes">
   {% if processes %}
     <h3>Related processes:</h3>
@@ -13,8 +13,26 @@
     </ul>
   {% endif %}
 </div>
-{% endpartial %}
-{% startpartial artifact_data inline=True %}
+<nav>
+  <div class="nav nav-tabs" role="tablist">
+    <button class="nav-link active"
+            id="artifact-data-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#artifact-data"
+            type="button"
+            role="tab"
+            aria-controls="artifact-data"
+            aria-selected="true">Data</button>
+    <button class="nav-link"
+            id="artifact-metadata-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#artifact-metadata"
+            type="button"
+            role="tab"
+            aria-controls="artifact-metadata"
+            aria-selected="false">Metadata</button>
+  </div>
+</nav>
 <div class="tab-pane fade show active"
      id="artifact-data"
      role="tabpanel"
@@ -35,4 +53,3 @@
     Select artifact to show related metadata
   {% endif %}
 </div>
-{% endpartial %}
