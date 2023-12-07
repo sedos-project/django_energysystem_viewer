@@ -5,7 +5,6 @@
 {% block javascript %}
   {{ block.super }}
   <script src="https://unpkg.com/htmx.org@1.9.9"></script>
-  <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
 {% endblock javascript %}
 
 {% block content %}
@@ -20,18 +19,14 @@
             {% for artifact in group.list %}
               <li>
                 <button class="btn btn-link"
-                        hx-ext="multi-swap"
                         hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
-                        hx-trigger="click"
-                        hx-swap="multi:#artifact-processes,#artifact-data,#artifact-metadata">
-                  {{ artifact.artifact }} ({{ artifact.version }})
-                </button>
+                        hx-target="#artifact-detail">{{ artifact.artifact }} ({{ artifact.version }})</button>
               </li>
             {% endfor %}
           </ul>
         {% endfor %}
       </div>
-      <div class="col">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
+      <div class="col" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
     </div>
   </div>
 {% endblock content %}

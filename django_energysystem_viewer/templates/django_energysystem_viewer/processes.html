@@ -5,7 +5,6 @@
 {% block javascript %}
   {{ block.super }}
   <script src="https://unpkg.com/htmx.org@1.9.9"></script>
-  <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
 {% endblock javascript %}
 
 {% block content %}
@@ -17,15 +16,13 @@
           {% for process in processes %}
             <li>
               <button class="btn btn-link"
-                      hx-ext="multi-swap"
                       hx-get="/collection/{{ collection_name }}/process/{{ process }}/data"
-                      hx-trigger="click"
-                      hx-swap="multi:#process-artifacts,#process-scalars,#process-timeseries">{{ process }}</button>
+                      hx-target="#process-detail">{{ process }}</button>
             </li>
           {% endfor %}
         </ul>
       </div>
-      <div class="col">{% include "django_energysystem_viewer/process_detail.html" %}</div>
+      <div class="col" id="process-detail">{% include "django_energysystem_viewer/process_detail.html" %}</div>
     </div>
   </div>
 {% endblock content %}
