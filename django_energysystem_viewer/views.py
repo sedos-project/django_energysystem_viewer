@@ -23,29 +23,13 @@ class CollectionsView(TemplateView):
         return {"collections": [file.name for file in settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
 
 
-class ProcessesView(TemplateView):
-    template_name = "django_energysystem_viewer/processes.html"
-
+class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
+        process_name = kwargs.get("process_name", self.request.GET.get("process"))
+        if not process_name:
+            return {}
+
         collection_name = kwargs["collection_name"]
-        processes = collection.get_processes_from_collection(collection_name)
-        context = {"collection_name": collection_name, "processes": processes}
-        process_name = self.request.GET.get("process")
-        if process_name:
-            process = preprocessing.get_process(collection_name, process_name)
-            artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
-            context["artifacts"] = artifacts
-            context["scalars"] = process.scalars.to_html()
-            context["timeseries"] = process.timeseries.to_html()
-        return context
-
-
-class ProcessDetailView(TemplateView):
-    template_name = "django_energysystem_viewer/process_detail.html"
-
-    def get_context_data(self, **kwargs):
-        collection_name = kwargs["collection_name"]
-        process_name = kwargs["process_name"]
         process = preprocessing.get_process(collection_name, process_name)
         artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
         return {
@@ -54,6 +38,21 @@ class ProcessDetailView(TemplateView):
             "scalars": process.scalars.to_html(),
             "timeseries": process.timeseries.to_html(),
         }
+
+
+class ProcessesView(ProcessDetailMixin, TemplateView):
+    template_name = "django_energysystem_viewer/processes.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        collection_name = kwargs["collection_name"]
+        processes = collection.get_processes_from_collection(collection_name)
+        context["processes"] = processes
+        return context
+
+
+class ProcessDetailView(ProcessDetailMixin, TemplateView):
+    template_name = "django_energysystem_viewer/process_detail.html"
 
 
 class ArtifactsView(TemplateView):
