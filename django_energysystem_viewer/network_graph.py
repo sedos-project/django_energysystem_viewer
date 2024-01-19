@@ -650,7 +650,9 @@ def calculate_offset(sector, algorithm):
 
 
 # generate the graph
-def generate_Graph(selected_sectors, algorithm, seperate_commodities, process_specific, commodity_specific):
+def generate_Graph(
+    selected_sectors, algorithm, seperate_commodities="sep", process_specific=None, commodity_specific=None
+):
     """Generates the graph for the selected sectors and algorithm.
 
     Parameters
