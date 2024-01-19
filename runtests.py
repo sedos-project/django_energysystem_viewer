@@ -54,7 +54,7 @@ def runtests():
     django.setup()
     failures = call_command(
         "test",
-        "tests.test_modex_source",
+        "tests.test_network_graph",
         interactive=False,
         failfast=False,
         verbosity=2,
