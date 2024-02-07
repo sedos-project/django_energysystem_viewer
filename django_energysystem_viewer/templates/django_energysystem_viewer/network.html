@@ -26,6 +26,23 @@
         <option label="Mobility" value="mob"></option>
         <option label="Heat" value="hea"></option>
       </select>
+      <label for="seperate_join">Sectors seperate or joined:</label>
+      <input type="radio" id="seperate" name="seperate_join" value="seperate">
+      <label for="seperate">Seperate Sectors</label><br>
+      <input type="radio" id="joined" name="seperate_join" value="joined">
+      <label for="joined">Aggregate Sectors</label><br>
+      <label for="process">Choose specific process to display:</label>
+      <select id="process" name="process">
+        <option label="pow_combustion_gt_ag" value="pow_combustion_gt_ag"></option>
+        <option label="pow_combustion_gt_biogas" value="pow_combustion_gt_biogas"></option>
+        <option label="pow_combustion_gt_natgas" value="pow_combustion_gt_natgas"></option>
+      </select>
+      <label for="commodity">Choose specific commodity to display:</label>
+      <select id="commodity" name="commodity">
+        <option label="CH4f" value="CH4f"></option>
+        <option label="CO2f" value="CO2f"></option>
+        <option label="CO2p" value="CO2p"></option>
+      </select>
     </form>
     <div id="graph"></div>
     <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
