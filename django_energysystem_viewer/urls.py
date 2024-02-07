@@ -10,7 +10,7 @@ urlpatterns = [
     path("energysystem/network_graph/", views.network_graph),
     path("energysystem/abbreviation/", views.AbbreviationView.as_view()),
     path("energysystem/aggregation/", views.AggregationView.as_view()),
-    path("energysystem/aggregation_graph/", views.aggregation_graph()),
+    path("energysystem/aggregation_graph/", views.aggregation_graph),
     path("collections/", views.CollectionsView.as_view(), name="collections"),
     path("collection/<str:collection_name>/processes/", views.ProcessesView.as_view(), name="processes"),
     path(

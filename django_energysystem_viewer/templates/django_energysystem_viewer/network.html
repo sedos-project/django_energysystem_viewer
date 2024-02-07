@@ -10,7 +10,7 @@
   <body>
     <h1>Network Graph</h1>
     <form hx-get="/energysystem/network_graph"
-          hx-target="#graph"
+          hx-target="#network_graph"
           hx-trigger="change">
       <label for="mapping">Mapping:</label>
       <select id="mapping" name="mapping">
@@ -44,7 +44,7 @@
         <option label="CO2p" value="CO2p"></option>
       </select>
     </form>
-    <div id="graph"></div>
+    <div id="network_graph"></div>
     <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
   </body>
 </html>
