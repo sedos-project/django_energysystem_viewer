@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="energysystem,abbrevation" />
+    <meta name="description" content="Abbrevation for given energysystem" />
+    <title>Title</title>
+  </head>
+  <body>
+    <h1>Abbreviation Help:</h1>
+    <form hx-get="/energysystem/abbreviation"
+          hx-target="#output"
+          hx-trigger="change">
+        <label for="abbrevation"></label>
+        <input list="options" id="abbrevation" name="abbrevation" placeholder="Enter or select abbrevation...">
+        <datalist id="options">
+            <option value="a-si">
+            <option value="abs">
+            <option value="aec">
+        </datalist>
+    </form>
+    <div id="output"></div>
+  </body>
+</html>
