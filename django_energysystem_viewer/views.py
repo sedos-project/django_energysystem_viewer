@@ -17,6 +17,18 @@ def network_graph(request):
     return HttpResponse(ng.generate_Graph(sectors, mapping).to_html())
 
 
+class AbbreviationView(TemplateView):
+    template_name = "django_energysystem_viewer/abbreviation.html"
+
+
+class AggregationView(TemplateView):
+    template_name = "django_energysystem_viewer/aggregation.html"
+
+
+def aggregation_graph(request):
+    return "oi"
+
+
 class CollectionsView(TemplateView):
     template_name = "django_energysystem_viewer/collections.html"
 
