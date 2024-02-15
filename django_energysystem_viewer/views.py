@@ -36,7 +36,7 @@ def abbreviation_meaning(request):
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:
-            return HttpResponse(meaning)
+            return HttpResponse("Meaning: " + meaning)
         else:
             return HttpResponse(["Abbreviation not found"])
     else:
