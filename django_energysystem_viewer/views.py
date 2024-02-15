@@ -1,7 +1,9 @@
-import json
-import json2table
+import pandas as pd
+
 from data_adapter import collection, preprocessing, settings
+from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from django_energysystem_viewer import network_graph as ng
@@ -17,9 +19,29 @@ def network_graph(request):
     return HttpResponse(ng.generate_Graph(sectors, mapping).to_html())
 
 
-class AbbreviationView(TemplateView):
-    template_name = "django_energysystem_viewer/abbreviation.html"
+def get_abbreviation_input():
+    abbreviations = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Abbreviations")
+    return abbreviations
 
+
+def abbreviations(request):
+    abbreviations = get_abbreviation_input()
+    abbreviation_list = abbreviations["abbreviations"].unique()
+    return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list})
+
+
+def abbreviation_meaning(request):
+    abb = request.GET.get("abbreviation")
+    abbreviations = get_abbreviation_input()
+    if abb:
+        meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
+        if len(meaning) > 0:
+            return HttpResponse(meaning)
+        else:
+            return HttpResponse(["Abbreviation not found"])
+    else:
+        return HttpResponse("")
+    
 
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
