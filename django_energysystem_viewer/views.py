@@ -16,7 +16,10 @@ class NetworkView(TemplateView):
 def network_graph(request):
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
-    return HttpResponse(ng.generate_Graph(sectors, mapping).to_html())
+    sep_agg = request.GET.get("seperate_join")
+    process = request.GET.get("process")
+    commodity = request.GET.get("commodity")
+    return HttpResponse(ng.generate_Graph(sectors, mapping, sep_agg, process, commodity).to_html())
 
 
 def get_abbreviation_input():
