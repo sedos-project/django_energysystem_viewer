@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="keywords" content="energysystem,abbrevation" />
+    <meta name="description" content="Abbreviation for given energysystem" />
+    <title>Title</title>
+  </head>
+  <body>
+    <h1>Abbreviation Help:</h1>
+    <form hx-get="/energysystem/abbreviation_meaning"
+          hx-target="#meaning"
+          hx-swap="innerhtml"
+          hx-trigger="input">
+        <label for="abbreviation"></label>
+        <input list="abbreviations" id="abbreviation" name="abbreviation" placeholder="Enter or select abbreviation...">
+        <datalist id="abbreviations">
+            {% for abb in abbreviation_list %}
+            <option value="{{ abb }}">
+            {% endfor %}
+        </datalist>
+    </form>
+    <div id="meaning"></div>
+    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+  </body>
+</html>
