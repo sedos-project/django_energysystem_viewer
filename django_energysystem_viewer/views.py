@@ -1,6 +1,6 @@
 import pandas as pd
-
-from data_adapter import collection, preprocessing, settings
+from data_adapter import collection, preprocessing
+from data_adapter import settings as adapter_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -41,7 +41,7 @@ def abbreviation_meaning(request):
             return HttpResponse(["Abbreviation not found"])
     else:
         return HttpResponse("")
-    
+
 
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
@@ -55,7 +55,7 @@ class CollectionsView(TemplateView):
     template_name = "django_energysystem_viewer/collections.html"
 
     def get_context_data(self, **kwargs):
-        return {"collections": [file.name for file in settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+        return {"collections": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
 
 
 class ProcessDetailMixin:
@@ -131,7 +131,8 @@ class ArtifactDetailView(TemplateView):
             "data": artifact.data.to_html(),
             "metadata": metadataWidget.render(),
         }
-    
+
+
 class JsonWidget:
     """
     render JSON data into HTML with indention depending on the level of nesting
@@ -145,6 +146,7 @@ class JsonWidget:
     render()
         Necessary for rendering the html structure in the django template.
     """
+
     def __init__(self, json: dict):
         self.json = json
 
