@@ -57,9 +57,9 @@
           <label for="commodity">OR Choose specific commodity to display:</label>
           <input list="commodities" id="commodity" name="commodity" placeholder="Enter or select process...">
           <datalist id="commodities">
-            <option label="CH4f" value="CH4f"></option>
-            <option label="CO2f" value="CO2f"></option>
-            <option label="CO2p" value="CO2p"></option>
+            {% for commodity in unique_commodities %}
+            <option value="{{ commodity }}"></option>
+            {% endfor %}
           </datalist>         
         </div>
       </div>

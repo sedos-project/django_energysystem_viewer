@@ -9,15 +9,45 @@ from django.views.generic import TemplateView
 from django_energysystem_viewer import network_graph as ng
 
 
-def get_process_input():
-    process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-    return process_set
+def get_excel_data(sheet: str):
+    data = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, sheet)
+    return data
 
 
 def network(request):
-    process_set = get_process_input()
+    process_set = get_excel_data("Process_Set")
     unique_processes = process_set["process"].unique()
-    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes})
+
+    # get the inputs and outputs of the filtered process set
+    sector_commodities = (
+        process_set["input"].tolist()
+        + process_set["output"].tolist()
+    )
+
+    # clean the list of commodities from "[", "]", "nan" and " ", as well as split at ","
+    sector_commodities = [
+        str(item)
+        .replace("[", "")
+        .replace("]", "")
+        .replace(" ", "")
+        .replace("nan", "")
+        for item in sector_commodities
+    ]
+    sector_commodities = [item.split(",") for item in sector_commodities]
+
+    # get rid of duplicates
+    unique_commodities = []
+    for commodity in sector_commodities:
+        for item in commodity:
+            if item not in unique_commodities:
+                unique_commodities.append(item)
+
+    # remove empty strings
+    unique_commodities = [item for item in unique_commodities if item]
+
+    # sort unique commodities alphabetically
+    unique_commodities.sort()
+    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes, "unique_commodities": unique_commodities})
 
 
 def network_graph(request):
@@ -29,20 +59,15 @@ def network_graph(request):
     return HttpResponse(ng.generate_Graph(sectors, mapping, sep_agg, process, commodity).to_html())
 
 
-def get_abbreviation_input():
-    abbreviations = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Abbreviations")
-    return abbreviations
-
-
 def abbreviations(request):
-    abbreviations = get_abbreviation_input()
+    abbreviations = get_excel_data("Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list})
 
 
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
-    abbreviations = get_abbreviation_input()
+    abbreviations = get_excel_data("Abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:
