@@ -9,8 +9,15 @@ from django.views.generic import TemplateView
 from django_energysystem_viewer import network_graph as ng
 
 
-class NetworkView(TemplateView):
-    template_name = "django_energysystem_viewer/network.html"
+def get_process_input():
+    process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
+    return process_set
+
+
+def network(request):
+    process_set = get_process_input()
+    unique_processes = process_set["process"].unique()
+    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes})
 
 
 def network_graph(request):

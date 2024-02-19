@@ -48,19 +48,19 @@
           You can choose to show a specific process or a specific commodity.</label>
         <div id="proc_comm">
           <label for="process">Choose specific process to display:</label>
-          <select id="process" name="process">
-            <option label="---" value="" selected></option>
-            <option label="pow_combustion_gt_ag" value="pow_combustion_gt_ag"></option>
-            <option label="pow_combustion_gt_biogas" value="pow_combustion_gt_biogas"></option>
-            <option label="pow_combustion_gt_natgas" value="pow_combustion_gt_natgas"></option>
-          </select>
+          <input list="processes" id="process" name="process" placeholder="Enter or select process...">
+          <datalist id="processes">
+            {% for process in unique_processes %}
+            <option value="{{ process }}"></option>
+            {% endfor %}
+          </datalist>
           <label for="commodity">OR Choose specific commodity to display:</label>
-          <select id="commodity" name="commodity">
-            <option label="---" value="" selected></option>
+          <input list="commodities" id="commodity" name="commodity" placeholder="Enter or select process...">
+          <datalist id="commodities">
             <option label="CH4f" value="CH4f"></option>
             <option label="CO2f" value="CO2f"></option>
             <option label="CO2p" value="CO2p"></option>
-          </select>
+          </datalist>         
         </div>
       </div>
     </form>

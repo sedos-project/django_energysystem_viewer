@@ -6,7 +6,7 @@ app_name = "django_energysystem_viewer"
 
 
 urlpatterns = [
-    path("energysystem/network/", views.NetworkView.as_view()),
+    path("energysystem/network/", views.network),
     path("energysystem/network_graph/", views.network_graph),
     path("energysystem/abbreviation/", views.abbreviations),
     path("energysystem/abbreviation_meaning/", views.abbreviation_meaning),
