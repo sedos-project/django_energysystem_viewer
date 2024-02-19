@@ -6,16 +6,6 @@
     <meta name="keywords" content="energysystem,network" />
     <meta name="description" content="Network graph for given energysystem" />
     <title>Title</title>
-    {% block css %}
-      <!-- Latest compiled and minified Bootstrap CSS -->
-      <!-- Your stuff: Third-party CSS libraries go here -->
-      <!-- This file stores project-specific CSS -->
-      {% compress css %}
-        <link rel="stylesheet" type="text/x-scss" href="{% static "vendors/bootstrap/scss/bootstrap.scss" %}" />
-        {#        <link rel="stylesheet" href="{% static "vendors/bootstrap-select/css/bootstrap-select.min.css" %}" />#}
-        <link href="{% static 'css/project.css' %}" rel="stylesheet" />
-      {% endcompress %}
-    {% endblock css %}
   </head>
   <body>
     <h1>Network Graph</h1>
@@ -40,28 +30,26 @@
       <input type="radio" id="seperate" name="seperate_join" value="sep">
       <label for="seperate">Seperate Sectors</label><br>
       <input type="radio" id="joined" name="seperate_join" value="agg">
-      <label for="joined">Aggregate Sectors</label><br>
-      <div class="form-check form-switch" _="on load hide #proc_comm end 
-      on change if #proc_comm_switch.checked show #proc_comm else hide #proc_comm">       
-        <input class="form-check-input" type="checkbox" role="switch" id="proc_comm_switch">
-        <label class="form-check-label" for="proc_comm_switch">
-          You can choose to show a specific process or a specific commodity.</label>
-        <div id="proc_comm">
-          <label for="process">Choose specific process to display:</label>
-          <input list="processes" id="process" name="process" placeholder="Enter or select process...">
-          <datalist id="processes">
-            {% for process in unique_processes %}
-            <option value="{{ process }}"></option>
-            {% endfor %}
-          </datalist>
-          <label for="commodity">OR Choose specific commodity to display:</label>
-          <input list="commodities" id="commodity" name="commodity" placeholder="Enter or select process...">
-          <datalist id="commodities">
-            {% for commodity in unique_commodities %}
-            <option value="{{ commodity }}"></option>
-            {% endfor %}
-          </datalist>         
-        </div>
+      <label for="joined">Aggregate Sectors</label><br>     
+      <div>You can choose to filter a specific process or a specific commodity.</div><br>
+      <div id="proc_comm" _="on input if #process.value add @disabled to #commodity
+      else remove @disabled from #commodity end
+      on input if #commodity.value add @disabled to #process
+      else remove @disabled from #process">
+        <label for="process">Choose specific process to display:</label>
+        <input list="processes" id="process" name="process" placeholder="Enter or select process...">
+        <datalist id="processes">
+          {% for process in unique_processes %}
+          <option value="{{ process }}"></option>
+          {% endfor %}
+        </datalist>
+        <label for="commodity">Choose specific commodity to display:</label>
+        <input list="commodities" id="commodity" name="commodity" placeholder="Enter or select process...">
+        <datalist id="commodities">
+          {% for commodity in unique_commodities %}
+          <option value="{{ commodity }}"></option>
+          {% endfor %}
+        </datalist>         
       </div>
     </form>
     <div id="network_graph"></div>
