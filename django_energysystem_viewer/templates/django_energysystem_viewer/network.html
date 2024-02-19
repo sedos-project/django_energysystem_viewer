@@ -1,4 +1,4 @@
-{% load static %}
+{% load static compress %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,6 +6,16 @@
     <meta name="keywords" content="energysystem,network" />
     <meta name="description" content="Network graph for given energysystem" />
     <title>Title</title>
+    {% block css %}
+      <!-- Latest compiled and minified Bootstrap CSS -->
+      <!-- Your stuff: Third-party CSS libraries go here -->
+      <!-- This file stores project-specific CSS -->
+      {% compress css %}
+        <link rel="stylesheet" type="text/x-scss" href="{% static "vendors/bootstrap/scss/bootstrap.scss" %}" />
+        {#        <link rel="stylesheet" href="{% static "vendors/bootstrap-select/css/bootstrap-select.min.css" %}" />#}
+        <link href="{% static 'css/project.css' %}" rel="stylesheet" />
+      {% endcompress %}
+    {% endblock css %}
   </head>
   <body>
     <h1>Network Graph</h1>
@@ -27,24 +37,35 @@
         <option label="Heat" value="hea"></option>
       </select>
       <label for="seperate_join">Sectors seperate or joined:</label>
-      <input type="radio" id="seperate" name="seperate_join" value="seperate">
+      <input type="radio" id="seperate" name="seperate_join" value="sep">
       <label for="seperate">Seperate Sectors</label><br>
-      <input type="radio" id="joined" name="seperate_join" value="joined">
+      <input type="radio" id="joined" name="seperate_join" value="agg">
       <label for="joined">Aggregate Sectors</label><br>
-      <label for="process">Choose specific process to display:</label>
-      <select id="process" name="process">
-        <option label="pow_combustion_gt_ag" value="pow_combustion_gt_ag"></option>
-        <option label="pow_combustion_gt_biogas" value="pow_combustion_gt_biogas"></option>
-        <option label="pow_combustion_gt_natgas" value="pow_combustion_gt_natgas"></option>
-      </select>
-      <label for="commodity">Choose specific commodity to display:</label>
-      <select id="commodity" name="commodity">
-        <option label="CH4f" value="CH4f"></option>
-        <option label="CO2f" value="CO2f"></option>
-        <option label="CO2p" value="CO2p"></option>
-      </select>
+      <div class="form-check form-switch" _="on load hide #proc_comm end 
+      on change if #proc_comm_switch.checked show #proc_comm else hide #proc_comm">       
+        <input class="form-check-input" type="checkbox" role="switch" id="proc_comm_switch">
+        <label class="form-check-label" for="proc_comm_switch">
+          You can choose to show a specific process or a specific commodity.</label>
+        <div id="proc_comm">
+          <label for="process">Choose specific process to display:</label>
+          <select id="process" name="process">
+            <option label="---" value="" selected></option>
+            <option label="pow_combustion_gt_ag" value="pow_combustion_gt_ag"></option>
+            <option label="pow_combustion_gt_biogas" value="pow_combustion_gt_biogas"></option>
+            <option label="pow_combustion_gt_natgas" value="pow_combustion_gt_natgas"></option>
+          </select>
+          <label for="commodity">OR Choose specific commodity to display:</label>
+          <select id="commodity" name="commodity">
+            <option label="---" value="" selected></option>
+            <option label="CH4f" value="CH4f"></option>
+            <option label="CO2f" value="CO2f"></option>
+            <option label="CO2p" value="CO2p"></option>
+          </select>
+        </div>
+      </div>
     </form>
     <div id="network_graph"></div>
     <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
   </body>
 </html>
