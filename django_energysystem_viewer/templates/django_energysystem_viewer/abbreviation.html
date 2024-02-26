@@ -20,6 +20,7 @@
             <option value="{{ abb }}">
             {% endfor %}
         </datalist>
+        <input type="hidden" name="structure" value="{{ structure }}" />
     </form>
     <div id="meaning"></div>
     <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>

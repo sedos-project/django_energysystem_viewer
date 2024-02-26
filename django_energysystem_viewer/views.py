@@ -16,14 +16,16 @@ class SelectionView(TemplateView):
         return {"structure_list": [file.name for file in da_settings.STRUCTURES_DIR.iterdir() 
                                    if not file.name.startswith('.') or file.name.endswith(('.xls', '.xlsx'))],
                 "collection_list": [file.name for file in da_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+    
 
-def get_excel_data(sheet: str):
-    data = pd.read_excel(da_settings.MEDIA_ROOT + "/" + da_settings.MODEL_STRUCTURE_FILE, sheet)
+def get_excel_data(file: str, sheet: str):
+    data = pd.read_excel(str(da_settings.STRUCTURES_DIR / file), sheet)
     return data
 
 
 def network(request):
-    process_set = get_excel_data("Process_Set")
+    file_name = request.GET.get("structures")
+    process_set = get_excel_data(file_name, "Process_Set")
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
@@ -68,14 +70,17 @@ def network_graph(request):
 
 
 def abbreviations(request):
-    abbreviations = get_excel_data("Abbreviations")
+    file_name = request.GET.get("structures")
+    abbreviations = get_excel_data(file_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
-    return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list})
+    return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list, 
+                                                                            "structure": file_name})
 
 
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
-    abbreviations = get_excel_data("Abbreviations")
+    file_name = request.GET.get("structure")
+    abbreviations = get_excel_data(file_name, "Abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:

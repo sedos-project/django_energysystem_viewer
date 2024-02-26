@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Selections:</h1>
+  <h3>Structures:</h3>
+  <form method="get">
+    <select id="structures" name="structures">
+        {% for structure in structure_list %}
+        <option label="{{ structure }}">{{ structure }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" formaction="{% url 'django_energysystem_viewer:abbreviations' %}">Look at Abbreviation</button>
+    <button type="submit">Look at Aggregation</button>
+    <button type="submit" formaction="{% url 'django_energysystem_viewer:networks' %}">Look at Network</button>
+  </form>
+  
+  <h3>Collections:</h3>
+  <form method="get">
+    {% csrf_token %}
+    <select id="collections">
+        {% for collection in collection_list %}
+        <option label="{{ collection }}">{{ collection }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" formaction="{% url 'django_energysystem_viewer:collections' %}">Look at Collection</button>
+  </form>
+{% endblock content %}
