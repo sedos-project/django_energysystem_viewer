@@ -13,13 +13,12 @@ urlpatterns = [
     path("energysystem/abbreviation_meaning/", views.abbreviation_meaning),
     path("energysystem/aggregation/", views.AggregationView.as_view(), name="aggregations"),
     path("energysystem/aggregation_graph/", views.aggregation_graph),
-    path("collections/", views.CollectionsView.as_view(), name="collections"),
-    path("collection/<str:collection_name>/processes/", views.ProcessesView.as_view(), name="processes"),
+    path("collection/processes/", views.ProcessesView.as_view(), name="processes"),
     path(
         "collection/<str:collection_name>/process/<str:process_name>/data/",
         views.ProcessDetailView.as_view(),
     ),
-    path("collection/<str:collection_name>/artifacts/", views.ArtifactsView.as_view(), name="artifacts"),
+    path("collection/artifacts/", views.ArtifactsView.as_view(), name="artifacts"),
     path(
         "collection/<str:collection_name>/artifact/<str:group_name>/<str:artifact_name>/data/",
         views.ArtifactDetailView.as_view(),

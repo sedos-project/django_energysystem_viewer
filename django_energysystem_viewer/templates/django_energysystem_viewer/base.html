@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="alert alert-info alert-dismissible fade show" role="alert">
-    You are currently using this data: {{ data }}
+    You are currently using this data: {{ banner_data }}
     <form action="{% url 'django_energysystem_viewer:selection' %}">
         <button data-bs-dismiss="offcanvas">change data</button>
     </form>
