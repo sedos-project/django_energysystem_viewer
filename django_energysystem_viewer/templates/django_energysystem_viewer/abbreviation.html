@@ -1,36 +1,24 @@
-{% load static compress %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="keywords" content="energysystem,abbrevation" />
-    <meta name="description" content="Abbreviation for given energysystem" />
-    <title>Title</title>
-    {% block css %}
-      {% compress css %}
-        <link rel="stylesheet" type="text/x-scss" href="{% static "vendors/bootstrap/scss/bootstrap.scss" %}" />
-        {#        <link rel="stylesheet" href="{% static "vendors/bootstrap-select/css/bootstrap-select.min.css" %}" />#}
-        <link href="{% static 'css/project.css' %}" rel="stylesheet" />
-      {% endcompress %}
-    {% endblock css %}
-  </head>
-  <body>
-    <div id="structure_banner">{% include "django_energysystem_viewer/structure_banner.html" %}</div>
-    <h1>Abbreviation Help:</h1>
-    <form hx-get="/energysystem/abbreviation_meaning"
-          hx-target="#meaning"
-          hx-swap="innerhtml"
-          hx-trigger="input">
-        <label for="abbreviation"></label>
-        <input list="abbreviations" id="abbreviation" name="abbreviation" placeholder="Enter or select abbreviation...">
-        <datalist id="abbreviations">
-            {% for abb in abbreviation_list %}
-            <option value="{{ abb }}">
-            {% endfor %}
-        </datalist>
-        <input type="hidden" name="structure" value="{{ structure }}" />
-    </form>
-    <div id="meaning"></div>
-    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
-  </body>
-</html>
+{% extends "django_energysystem_viewer/base.html" %}
+
+{% load static %}
+
+{% block specific_content %}
+<h1>Abbreviation Help:</h1>
+<form hx-get="/energysystem/abbreviation_meaning"
+      hx-target="#meaning"
+      hx-swap="innerhtml"
+      hx-trigger="input">
+    <label for="abbreviation"></label>
+    <input list="abbreviations" id="abbreviation" name="abbreviation" placeholder="Enter or select abbreviation...">
+    <datalist id="abbreviations">
+        {% for abb in abbreviation_list %}
+        <option value="{{ abb }}">
+        {% endfor %}
+    </datalist>
+    <input type="hidden" name="structure" value="{{ structure }}" />
+</form>
+<div id="meaning"></div>
+{% endblock specific_content %}
+{% block javascript %}
+<script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+{% endblock javascript %}

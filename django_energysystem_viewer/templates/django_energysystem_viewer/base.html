@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="alert alert-info alert-dismissible fade show" role="alert">
+    You are currently using this data: {{ data }}
+    <form action="{% url 'django_energysystem_viewer:selection' %}">
+        <button data-bs-dismiss="offcanvas">change data</button>
+    </form>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<div class="container">
+    {% block specific_content %}{% endblock specific_content %}
+</div>
+{% endblock content %}

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "django_energysystem_viewer/base.html" %}
 
 {% load static partials %}
 
@@ -7,7 +7,7 @@
   <script src="https://unpkg.com/htmx.org@1.9.9"></script>
 {% endblock javascript %}
 
-{% block content %}
+{% block specific_content %}
   <h1>Collection "{{ collection_name }}"</h1>
   <div class="container">
     <div class="row">
@@ -29,4 +29,4 @@
       <div class="col" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
     </div>
   </div>
-{% endblock content %}
+{% endblock specific_content %}

@@ -1,48 +1,35 @@
+{% extends "django_energysystem_viewer/base.html" %}
+
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="keywords" content="energysystem,aggregation" />
-    <meta name="description" content="Aggregation graph for given energysystem" />
-    <title>Title</title>
-    <!-- Add the Ion RangeSlider CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/css/ion.rangeSlider.min.css" />
 
-    <!-- Add jQuery (required by Ion RangeSlider) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+{% block specific_content %}
+<h1>Aggregation Graph</h1>
+<form hx-get="/energysystem/aggregation_graph"
+      hx-target="#aggregation_graph"
+      hx-trigger="change">
+  <label for="sectors">Choose Sector:</label>
+  <select id="sectors" name="sectors" multiple>
+    <option label="Power" value="pow"></option>
+    <option label="X2X" value="x2x"></option>
+    <option label="Industry" value="ind"></option>
+    <option label="Mobility" value="mob"></option>
+    <option label="Heat" value="hea"></option>
+  </select>
+  <label for="lod">Choose the desired level of detail with the slider:</label>
+  <input type="text" class="js-range-slider" name="lod" value=""
+    data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
+    data-grid="true"
+/>
+</form>
+<div id="aggregation_graph"></div>
+{% endblock specific_content %}
+{% block javascript %}
+<!-- Initialize the RangeSlider -->
+<script>
+    $(document).ready(function() {
+        $(".js-range-slider").ionRangeSlider();
+    });
+</script>
+<script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+{% endblock javascript %}
 
-    <!-- Add the Ion RangeSlider JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
-  </head>
-  <body>
-    <div id="structure_banner">{% include "django_energysystem_viewer/structure_banner.html" %}</div>
-    <h1>Aggregation Graph</h1>
-    <form hx-get="/energysystem/aggregation_graph"
-          hx-target="#aggregation_graph"
-          hx-trigger="change">
-      <label for="sectors">Choose Sector:</label>
-      <select id="sectors" name="sectors" multiple>
-        <option label="Power" value="pow"></option>
-        <option label="X2X" value="x2x"></option>
-        <option label="Industry" value="ind"></option>
-        <option label="Mobility" value="mob"></option>
-        <option label="Heat" value="hea"></option>
-      </select>
-      <label for="lod">Choose the desired level of detail with the slider:</label>
-      <input type="text" class="js-range-slider" name="lod" value=""
-        data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
-        data-grid="true"
-    />
-    </form>
-    <div id="aggregation_graph"></div>
-
-    <!-- Initialize the RangeSlider -->
-    <script>
-        $(document).ready(function() {
-            $(".js-range-slider").ionRangeSlider();
-        });
-    </script>
-    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
-  </body>
-</html>
