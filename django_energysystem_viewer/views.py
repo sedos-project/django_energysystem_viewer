@@ -94,6 +94,10 @@ def abbreviation_meaning(request):
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
+    def get_context_data(self, **kwargs):
+        file_name = self.request.GET.get("structures")
+        return {"data": file_name}
+
 
 def aggregation_graph(request):
     return "oi"
