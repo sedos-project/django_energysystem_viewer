@@ -57,7 +57,7 @@ def network(request):
 
     # sort unique commodities alphabetically
     unique_commodities.sort()
-    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes, "unique_commodities": unique_commodities})
+    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes, "unique_commodities": unique_commodities, "data": file_name})
 
 
 def network_graph(request):
@@ -74,7 +74,7 @@ def abbreviations(request):
     abbreviations = get_excel_data(file_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list, 
-                                                                            "structure": file_name})
+                                                                            "data": file_name})
 
 
 def abbreviation_meaning(request):
