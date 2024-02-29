@@ -16,6 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ion-rangeslider/2.3.1/js/ion.rangeSlider.min.js"></script>
   </head>
   <body>
+    <div id="structure_banner">{% include "django_energysystem_viewer/structure_banner.html" %}</div>
     <h1>Aggregation Graph</h1>
     <form hx-get="/energysystem/aggregation_graph"
           hx-target="#aggregation_graph"

@@ -1,4 +1,4 @@
-{% load static %}
+{% load static compress %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,8 +6,16 @@
     <meta name="keywords" content="energysystem,abbrevation" />
     <meta name="description" content="Abbreviation for given energysystem" />
     <title>Title</title>
+    {% block css %}
+      {% compress css %}
+        <link rel="stylesheet" type="text/x-scss" href="{% static "vendors/bootstrap/scss/bootstrap.scss" %}" />
+        {#        <link rel="stylesheet" href="{% static "vendors/bootstrap-select/css/bootstrap-select.min.css" %}" />#}
+        <link href="{% static 'css/project.css' %}" rel="stylesheet" />
+      {% endcompress %}
+    {% endblock css %}
   </head>
   <body>
+    <div id="structure_banner">{% include "django_energysystem_viewer/structure_banner.html" %}</div>
     <h1>Abbreviation Help:</h1>
     <form hx-get="/energysystem/abbreviation_meaning"
           hx-target="#meaning"
