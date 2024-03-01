@@ -1,6 +1,6 @@
 import pandas as pd
 from data_adapter import collection, preprocessing
-from data_adapter import settings as da_settings
+from data_adapter import settings as adapter_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -86,7 +86,7 @@ class CollectionsView(TemplateView):
     template_name = "django_energysystem_viewer/collections.html"
 
     def get_context_data(self, **kwargs):
-        return {"collections": [file.name for file in da_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+        return {"collections": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
 
 
 class ProcessDetailMixin:

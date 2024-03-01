@@ -33,23 +33,25 @@
             aria-selected="false">Metadata</button>
   </div>
 </nav>
-<div class="tab-pane fade show active"
-     id="artifact-data"
-     role="tabpanel"
-     aria-labelledby="artifact-data-tab">
-  {% if data %}
-    {{ data | safe }}
-  {% else %}
-    Select artifact to show related data
-  {% endif %}
-</div>
-<div class="tab-pane fade"
-     id="artifact-metadata"
-     role="tabpanel"
-     aria-labelledby="artifact-metadata-tab">
-  {% if metadata %}
-    {{ metadata | safe }}
-  {% else %}
-    Select artifact to show related metadata
-  {% endif %}
+<div class="tab-content">
+  <div class="tab-pane fade show active"
+       id="artifact-data"
+       role="tabpanel"
+       aria-labelledby="artifact-data-tab">
+    {% if data %}
+      {{ data | safe }}
+    {% else %}
+      Select artifact to show related data
+    {% endif %}
+  </div>
+  <div class="tab-pane fade"
+       id="artifact-metadata"
+       role="tabpanel"
+       aria-labelledby="artifact-metadata-tab">
+    {% if metadata %}
+      {{ metadata | safe }}
+    {% else %}
+      Select artifact to show related metadata
+    {% endif %}
+  </div>
 </div>
