@@ -1,6 +1,6 @@
 import pandas as pd
-
-from data_adapter import collection, preprocessing, settings
+from data_adapter import collection, preprocessing
+from data_adapter import settings as da_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -19,19 +19,11 @@ def network(request):
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
-    sector_commodities = (
-        process_set["input"].tolist()
-        + process_set["output"].tolist()
-    )
+    sector_commodities = process_set["input"].tolist() + process_set["output"].tolist()
 
     # clean the list of commodities from "[", "]", "nan" and " ", as well as split at ","
     sector_commodities = [
-        str(item)
-        .replace("[", "")
-        .replace("]", "")
-        .replace(" ", "")
-        .replace("nan", "")
-        for item in sector_commodities
+        str(item).replace("[", "").replace("]", "").replace(" ", "").replace("nan", "") for item in sector_commodities
     ]
     sector_commodities = [item.split(",") for item in sector_commodities]
 
@@ -47,7 +39,11 @@ def network(request):
 
     # sort unique commodities alphabetically
     unique_commodities.sort()
-    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes, "unique_commodities": unique_commodities})
+    return render(
+        request,
+        "django_energysystem_viewer/network.html",
+        {"unique_processes": unique_processes, "unique_commodities": unique_commodities},
+    )
 
 
 def network_graph(request):
@@ -76,7 +72,7 @@ def abbreviation_meaning(request):
             return HttpResponse(["Abbreviation not found"])
     else:
         return HttpResponse("")
-    
+
 
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
@@ -90,7 +86,7 @@ class CollectionsView(TemplateView):
     template_name = "django_energysystem_viewer/collections.html"
 
     def get_context_data(self, **kwargs):
-        return {"collections": [file.name for file in settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+        return {"collections": [file.name for file in da_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
 
 
 class ProcessDetailMixin:
@@ -166,7 +162,8 @@ class ArtifactDetailView(TemplateView):
             "data": artifact.data.to_html(),
             "metadata": metadataWidget.render(),
         }
-    
+
+
 class JsonWidget:
     """
     render JSON data into HTML with indention depending on the level of nesting
@@ -180,6 +177,7 @@ class JsonWidget:
     render()
         Necessary for rendering the html structure in the django template.
     """
+
     def __init__(self, json: dict):
         self.json = json
 
