@@ -91,11 +91,11 @@ class CollectionsView(TemplateView):
 
 class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
+        collection_name = kwargs["collection_name"]
         process_name = kwargs.get("process_name", self.request.GET.get("process"))
         if not process_name:
-            return {}
+            return {"collection_name": collection_name}
 
-        collection_name = kwargs["collection_name"]
         process = preprocessing.get_process(collection_name, process_name)
         artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
         return {
