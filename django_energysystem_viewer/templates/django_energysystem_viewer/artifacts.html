@@ -11,7 +11,7 @@
   <h1>Collection "{{ collection_name }}"</h1>
   <div class="container">
     <div class="row">
-      <div class="col">
+      <div class="col-sm-4">
         {% regroup artifacts by group as artifacts_grouped %}
         {% for group in artifacts_grouped %}
           <h2>{{ group.grouper }}</h2>
@@ -26,7 +26,7 @@
           </ul>
         {% endfor %}
       </div>
-      <div class="col" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
+      <div class="col-8" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
     </div>
   </div>
 {% endblock content %}
