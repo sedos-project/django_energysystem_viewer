@@ -13,7 +13,6 @@ class Command(BaseCommand):
         main.download_collection(collection_url)
         self.stdout.write(
             self.style.SUCCESS(
-                'Successfully downloaded collection from "%s" into folder "%s".' % collection_url,
-                settings.COLLECTIONS_DIR,
+                f'Successfully downloaded collection from "{collection_url}" into folder "{settings.COLLECTIONS_DIR}".'
             )
         )
