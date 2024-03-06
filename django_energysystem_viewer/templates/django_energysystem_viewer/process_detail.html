@@ -5,7 +5,7 @@
     <ul>
       {% for artifact in artifacts %}
         <li>
-          <a href="{% url 'django_energysystem_viewer:artifacts' collection_name=banner_data %}?group={{ artifact.group }}&artifact={{ artifact.artifact }}">{{ artifact.artifact }}</a>
+          <a href="{% url 'django_energysystem_viewer:artifacts' collection_name=collection_name %}?group={{ artifact.group }}&artifact={{ artifact.artifact }}">{{ artifact.artifact }}</a>
         </li>
       {% endfor %}
     </ul>

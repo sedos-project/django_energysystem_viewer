@@ -127,7 +127,7 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         collection_name = self.request.GET.get("collections")
         processes = collection.get_processes_from_collection(collection_name)
-        context = {"processes": processes, "banner_data": collection_name}
+        context = {"collection_name": collection_name, "processes": processes, "banner_data": collection_name}
         return context
 
 
