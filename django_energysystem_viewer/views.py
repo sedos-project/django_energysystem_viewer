@@ -111,8 +111,8 @@ class ProcessDetailMixin:
         return {
             "collection_name": collection_name,
             "artifacts": artifacts,
-            "scalars": process.scalars.to_html(),
-            "timeseries": process.timeseries.to_html(),
+            "scalars": process.scalars.to_html() if not process.scalars.empty else "No data available",
+            "timeseries": process.timeseries.to_html() if not process.timeseries.empty else "No data available",
         }
 
 
@@ -170,7 +170,7 @@ class ArtifactDetailView(TemplateView):
             "processes": collection.get_collection_meta(collection_name)["artifacts"][group_name][artifact_name][
                 "names"
             ],
-            "data": artifact.data.to_html(),
+            "data": artifact.data.to_html() if not artifact.data.empty else "No data available",
             "metadata": metadataWidget.render(),
         }
 
