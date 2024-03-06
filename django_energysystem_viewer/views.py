@@ -1,6 +1,6 @@
 import pandas as pd
-
-from data_adapter import collection, preprocessing, settings as da_settings
+from data_adapter import collection, preprocessing
+from data_adapter import settings as adapter_settings
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -13,13 +13,13 @@ class SelectionView(TemplateView):
     template_name = "django_energysystem_viewer/selection.html"
 
     def get_context_data(self, **kwargs):
-        return {"structure_list": [file.name for file in da_settings.STRUCTURES_DIR.iterdir() 
+        return {"structure_list": [file.name for file in adapter_settings.STRUCTURES_DIR.iterdir() 
                                    if not file.name.startswith('.') or file.name.endswith(('.xls', '.xlsx'))],
-                "collection_list": [file.name for file in da_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+                "collection_list": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
     
 
 def get_excel_data(file: str, sheet: str):
-    data = pd.read_excel(str(da_settings.STRUCTURES_DIR / file), sheet)
+    data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / file), sheet)
     return data
 
 
@@ -29,19 +29,11 @@ def network(request):
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
-    sector_commodities = (
-        process_set["input"].tolist()
-        + process_set["output"].tolist()
-    )
+    sector_commodities = process_set["input"].tolist() + process_set["output"].tolist()
 
     # clean the list of commodities from "[", "]", "nan" and " ", as well as split at ","
     sector_commodities = [
-        str(item)
-        .replace("[", "")
-        .replace("]", "")
-        .replace(" ", "")
-        .replace("nan", "")
-        for item in sector_commodities
+        str(item).replace("[", "").replace("]", "").replace(" ", "").replace("nan", "") for item in sector_commodities
     ]
     sector_commodities = [item.split(",") for item in sector_commodities]
 
@@ -57,7 +49,13 @@ def network(request):
 
     # sort unique commodities alphabetically
     unique_commodities.sort()
-    return render(request, "django_energysystem_viewer/network.html", {"unique_processes": unique_processes, "unique_commodities": unique_commodities, "banner_data": file_name})
+    return render(
+        request,
+        "django_energysystem_viewer/network.html",
+        {"unique_processes": unique_processes, 
+         "unique_commodities": unique_commodities,
+         "banner_data": file_name},
+    )
 
 
 def network_graph(request):
@@ -89,7 +87,7 @@ def abbreviation_meaning(request):
             return HttpResponse(["Abbreviation not found"])
     else:
         return HttpResponse("")
-    
+
 
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
@@ -105,18 +103,22 @@ def aggregation_graph(request):
 
 class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
+        collection_name = self.request.GET.get("collections")
+        collection_url = collection.get_collection_meta(collection_name)["name"]
         process_name = kwargs.get("process_name", self.request.GET.get("process"))
         if not process_name:
-            return {}
+            return {
+                "collection_name": collection_name,
+                "collection_url": collection_url,
+            }
 
-        collection_name = kwargs["collection_name"]
         process = preprocessing.get_process(collection_name, process_name)
         artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
         return {
             "collection_name": collection_name,
             "artifacts": artifacts,
-            "scalars": process.scalars.to_html(),
-            "timeseries": process.timeseries.to_html(),
+            "scalars": process.scalars.to_html() if not process.scalars.empty else "No data available",
+            "timeseries": process.timeseries.to_html() if not process.timeseries.empty else "No data available",
         }
 
 
@@ -140,8 +142,9 @@ class ArtifactsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         collection_name = self.request.GET.get("collections")
+        collection_url = collection.get_collection_meta(collection_name)["name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
-        context = {"collection_name": collection_name, "artifacts": artifacts, "banner_data": collection_name}
+        context = {"collection_name": collection_name, "collection_url": collection_url, "artifacts": artifacts, "banner_data": collection_name}
 
         # If specific artifact is queried
         artifact_name = self.request.GET.get("artifact")
@@ -173,10 +176,11 @@ class ArtifactDetailView(TemplateView):
             "processes": collection.get_collection_meta(collection_name)["artifacts"][group_name][artifact_name][
                 "names"
             ],
-            "data": artifact.data.to_html(),
+            "data": artifact.data.to_html() if not artifact.data.empty else "No data available",
             "metadata": metadataWidget.render(),
         }
-    
+
+
 class JsonWidget:
     """
     render JSON data into HTML with indention depending on the level of nesting
@@ -190,6 +194,7 @@ class JsonWidget:
     render()
         Necessary for rendering the html structure in the django template.
     """
+
     def __init__(self, json: dict):
         self.json = json
 
