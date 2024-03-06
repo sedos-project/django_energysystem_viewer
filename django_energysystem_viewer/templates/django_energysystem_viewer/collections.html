@@ -3,9 +3,11 @@
 {% block content %}
   <h1>Collections:</h1>
   <ul>
-    {% for collection in collections %}
+    {% for collection_name, collection_url in collections.items %}
       <li>
-        {{ collection }} (<a href="{% url 'django_energysystem_viewer:processes' collection_name=collection %}">Processes</a> <a href="{% url 'django_energysystem_viewer:artifacts' collection_name=collection %}">Artifacts</a>)
+        {{ collection_name }} <a class="btn btn-primary" href="{{ collection_url }}">View collection</a> <a class="btn btn-primary"
+    href="{% url 'django_energysystem_viewer:processes' collection_name=collection_name %}">View processes</a> <a class="btn btn-primary"
+    href="{% url 'django_energysystem_viewer:artifacts' collection_name=collection_name %}">View artifacts</a>
       </li>
     {% endfor %}
   </ul>

@@ -86,15 +86,25 @@ class CollectionsView(TemplateView):
     template_name = "django_energysystem_viewer/collections.html"
 
     def get_context_data(self, **kwargs):
-        return {"collections": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
+        return {
+            "collections": {
+                file.name: collection.get_collection_meta(file.name)["name"]
+                for file in adapter_settings.COLLECTIONS_DIR.iterdir()
+                if file.is_dir()
+            }
+        }
 
 
 class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]
+        collection_url = collection.get_collection_meta(collection_name)["name"]
         process_name = kwargs.get("process_name", self.request.GET.get("process"))
         if not process_name:
-            return {"collection_name": collection_name}
+            return {
+                "collection_name": collection_name,
+                "collection_url": collection_url,
+            }
 
         process = preprocessing.get_process(collection_name, process_name)
         artifacts = collection.get_artifacts_from_collection(collection_name, process_name)
@@ -126,8 +136,9 @@ class ArtifactsView(TemplateView):
 
     def get_context_data(self, **kwargs):
         collection_name = kwargs["collection_name"]
+        collection_url = collection.get_collection_meta(collection_name)["name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
-        context = {"collection_name": collection_name, "artifacts": artifacts}
+        context = {"collection_name": collection_name, "collection_url": collection_url, "artifacts": artifacts}
 
         # If specific artifact is queried
         artifact_name = self.request.GET.get("artifact")
