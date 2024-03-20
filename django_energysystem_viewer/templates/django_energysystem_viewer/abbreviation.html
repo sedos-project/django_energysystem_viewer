@@ -2,23 +2,28 @@
 
 {% load static %}
 
-{% block specific_content %}
-<h1>Abbreviation Help:</h1>
-<form hx-get="/energysystem/abbreviation_meaning"
-      hx-target="#meaning"
-      hx-swap="innerhtml"
-      hx-trigger="input">
-    <label for="abbreviation"></label>
-    <input list="abbreviations" id="abbreviation" name="abbreviation" placeholder="Enter or select abbreviation...">
-    <datalist id="abbreviations">
-        {% for abb in abbreviation_list %}
-        <option value="{{ abb }}">
-        {% endfor %}
-    </datalist>
-    <input type="hidden" name="structure" value="{{ banner_data }}" />
-</form>
-<div id="meaning"></div>
-{% endblock specific_content %}
-{% block javascript %}
-<script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
-{% endblock javascript %}
+{% block content %}
+  {{ block.super }}
+  <div class="container">
+    <h1>Abbreviation Help:</h1>
+    <form hx-get="/energysystem/abbreviation_meaning"
+          hx-target="#meaning"
+          hx-swap="innerhtml"
+          hx-trigger="input">
+      <label for="abbreviation"></label>
+      <input list="abbreviations"
+             id="abbreviation"
+             name="abbreviation"
+             placeholder="Enter or select abbreviation...">
+      <datalist id="abbreviations">
+        {% for abb in abbreviation_list %}<option value="{{ abb }}">{% endfor %}
+        </datalist>
+        <input type="hidden" name="structure" value="{{ banner_data }}" />
+      </form>
+      <div id="meaning"></div>
+    </div>
+  {% endblock content %}
+
+  {% block javascript %}
+    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+  {% endblock javascript %}

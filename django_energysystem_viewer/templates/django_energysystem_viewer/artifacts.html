@@ -2,32 +2,35 @@
 
 {% load static partials %}
 
+{% block content %}
+  {{ block.super }}
+  <div class="container">
+    <h1>Collection "{{ collection_name }}"</h1>
+    <a class="btn btn-primary" href="{{ collection_url }}">View collection</a>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-4">
+          {% regroup artifacts by group as artifacts_grouped %}
+          {% for group in artifacts_grouped %}
+            <h2>{{ group.grouper }}</h2>
+            <ul>
+              {% for artifact in group.list %}
+                <li>
+                  <button class="btn btn-link"
+                          hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
+                          hx-target="#artifact-detail">{{ artifact.artifact }} ({{ artifact.version }})</button>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        </div>
+        <div class="col-8" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
 {% block javascript %}
   {{ block.super }}
   <script src="https://unpkg.com/htmx.org@1.9.9"></script>
 {% endblock javascript %}
-
-{% block specific_content %}
-  <h1>Collection "{{ collection_name }}"</h1>
-  <a class="btn btn-primary" href="{{ collection_url }}">View collection</a>
-  <div class="container">
-    <div class="row">
-      <div class="col-sm-4">
-        {% regroup artifacts by group as artifacts_grouped %}
-        {% for group in artifacts_grouped %}
-          <h2>{{ group.grouper }}</h2>
-          <ul>
-            {% for artifact in group.list %}
-              <li>
-                <button class="btn btn-link"
-                        hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
-                        hx-target="#artifact-detail">{{ artifact.artifact }} ({{ artifact.version }})</button>
-              </li>
-            {% endfor %}
-          </ul>
-        {% endfor %}
-      </div>
-      <div class="col-8" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
-    </div>
-  </div>
-{% endblock specific_content %}
