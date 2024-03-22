@@ -14,16 +14,17 @@ class SelectionView(TemplateView):
     def get_context_data(self, **kwargs):
         return {
             "structure_list": [
-                file.name
+                file.stem
                 for file in adapter_settings.STRUCTURES_DIR.iterdir()
-                if not file.name.startswith(".") or file.name.endswith((".xls", ".xlsx"))
+                if not file.name.startswith(".") and file.name.endswith((".xls", ".xlsx"))
             ],
             "collection_list": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()],
         }
 
 
 def get_excel_data(file: str, sheet: str):
-    data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / file), sheet)
+    excel_filename = f"{file}.xlsx"
+    data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / excel_filename), sheet)
     return data
 
 
