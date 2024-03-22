@@ -29,8 +29,8 @@ def get_excel_data(file: str, sheet: str):
 
 
 def network(request):
-    file_name = request.GET.get("structures")
-    process_set = get_excel_data(file_name, "Process_Set")
+    structure_name = request.GET.get("structures")
+    process_set = get_excel_data(structure_name, "Process_Set")
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
@@ -57,7 +57,11 @@ def network(request):
     return render(
         request,
         "django_energysystem_viewer/network.html",
-        {"unique_processes": unique_processes, "unique_commodities": unique_commodities, "banner_data": file_name},
+        {
+            "unique_processes": unique_processes,
+            "unique_commodities": unique_commodities,
+            "structure_name": structure_name,
+        },
     )
 
 
@@ -71,20 +75,20 @@ def network_graph(request):
 
 
 def abbreviations(request):
-    file_name = request.GET.get("structures")
-    abbreviations = get_excel_data(file_name, "Abbreviations")
+    structure_name = request.GET.get("structures")
+    abbreviations = get_excel_data(structure_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     return render(
         request,
         "django_energysystem_viewer/abbreviation.html",
-        {"abbreviation_list": abbreviation_list, "banner_data": file_name},
+        {"abbreviation_list": abbreviation_list, "structure_name": structure_name},
     )
 
 
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
-    file_name = request.GET.get("structure")
-    abbreviations = get_excel_data(file_name, "Abbreviations")
+    structure_name = request.GET.get("structure")
+    abbreviations = get_excel_data(structure_name, "Abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:
@@ -99,12 +103,8 @@ class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
     def get_context_data(self, **kwargs):
-        file_name = self.request.GET.get("structures")
-        return {"banner_data": file_name}
-
-
-def aggregation_graph(request):
-    return "oi"
+        structure_name = self.request.GET.get("structures")
+        return {"structure_name": structure_name}
 
 
 class ProcessDetailMixin:
@@ -154,7 +154,6 @@ class ArtifactsView(TemplateView):
             "collection_name": collection_name,
             "collection_url": collection_url,
             "artifacts": artifacts,
-            "banner_data": collection_name,
         }
 
         # If specific artifact is queried

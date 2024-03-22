@@ -2,9 +2,10 @@
 
 {% block content %}
   <div class="alert alert-info alert-dismissible fade show" role="alert">
-    You are currently using this data: {{ banner_data }}
+    {% if structure_name %}Current structure: {{ structure_name }}{% endif %}
+    {% if collection_name %}Current collection: {{ collection_name }}{% endif %}
     <form action="{% url 'django_energysystem_viewer:selection' %}">
-      <button data-bs-dismiss="offcanvas">change data</button>
+      <button class="btn btn-secondary" data-bs-dismiss="offcanvas">Change selection</button>
     </form>
   </div>
 {% endblock content %}
