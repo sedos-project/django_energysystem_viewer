@@ -1,7 +1,6 @@
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
-from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -13,10 +12,15 @@ class SelectionView(TemplateView):
     template_name = "django_energysystem_viewer/selection.html"
 
     def get_context_data(self, **kwargs):
-        return {"structure_list": [file.name for file in adapter_settings.STRUCTURES_DIR.iterdir() 
-                                   if not file.name.startswith('.') or file.name.endswith(('.xls', '.xlsx'))],
-                "collection_list": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()]}
-    
+        return {
+            "structure_list": [
+                file.name
+                for file in adapter_settings.STRUCTURES_DIR.iterdir()
+                if not file.name.startswith(".") or file.name.endswith((".xls", ".xlsx"))
+            ],
+            "collection_list": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()],
+        }
+
 
 def get_excel_data(file: str, sheet: str):
     data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / file), sheet)
@@ -52,9 +56,7 @@ def network(request):
     return render(
         request,
         "django_energysystem_viewer/network.html",
-        {"unique_processes": unique_processes, 
-         "unique_commodities": unique_commodities,
-         "banner_data": file_name},
+        {"unique_processes": unique_processes, "unique_commodities": unique_commodities, "banner_data": file_name},
     )
 
 
@@ -71,8 +73,11 @@ def abbreviations(request):
     file_name = request.GET.get("structures")
     abbreviations = get_excel_data(file_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
-    return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list, 
-                                                                            "banner_data": file_name})
+    return render(
+        request,
+        "django_energysystem_viewer/abbreviation.html",
+        {"abbreviation_list": abbreviation_list, "banner_data": file_name},
+    )
 
 
 def abbreviation_meaning(request):
@@ -144,7 +149,12 @@ class ArtifactsView(TemplateView):
         collection_name = self.request.GET.get("collections")
         collection_url = collection.get_collection_meta(collection_name)["name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
-        context = {"collection_name": collection_name, "collection_url": collection_url, "artifacts": artifacts, "banner_data": collection_name}
+        context = {
+            "collection_name": collection_name,
+            "collection_url": collection_url,
+            "artifacts": artifacts,
+            "banner_data": collection_name,
+        }
 
         # If specific artifact is queried
         artifact_name = self.request.GET.get("artifact")

@@ -11,7 +11,8 @@ def generate_trace(sector, algorithm, seperate_commodities):
     Parameters
     ----------
     sector: str
-        The selected sector, which is used to filter the process set or in the case of aggregated commodities, a string of the selected sectors.
+        The selected sector, which is used to filter the process set or in the case of aggregated commodities, a string
+        of the selected sectors.
     algorithm: str
         The selected algorithm, which is used to generate the layout.
     seperate_commodities: str
@@ -29,7 +30,7 @@ def generate_trace(sector, algorithm, seperate_commodities):
     updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
 
     # filter aggregations as first step
-    updated_process_set = updated_process_set[~updated_process_set['process'].str.endswith('_ag')]
+    updated_process_set = updated_process_set[~updated_process_set["process"].str.endswith("_ag")]
 
     # initialize the lists for the inputs, outputs and processes
     inputs = []
@@ -39,9 +40,7 @@ def generate_trace(sector, algorithm, seperate_commodities):
     # in the case that the commodities are seperate, the nodes and edges are created for each sector seperately
     # in the case that the commodities are aggregated, the nodes and edges of the selected sectors are created together
     if seperate_commodities == "sep":
-        filtered_process_set = updated_process_set[
-            updated_process_set["process"].str.startswith(sector)
-        ]
+        filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector)]
 
         inputs = filtered_process_set["input"].tolist()
         outputs = filtered_process_set["output"].tolist()
@@ -51,9 +50,7 @@ def generate_trace(sector, algorithm, seperate_commodities):
         sector_abbrvs = ["pow", "x2x", "ind", "tra", "hea"]
         for sector_abbrv in sector_abbrvs:
             if sector_abbrv in sector:
-                filtered_process_set = updated_process_set[
-                    updated_process_set["process"].str.startswith(sector_abbrv)
-                ]
+                filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector_abbrv)]
 
                 inputs += filtered_process_set["input"].tolist()
                 outputs += filtered_process_set["output"].tolist()
@@ -186,7 +183,6 @@ def generate_trace(sector, algorithm, seperate_commodities):
     #     )
     #     arrowhead_traces.append(arrowhead_trace)
 
-
     node_trace = go.Scatter(
         x=Xn,
         y=Yn,
@@ -231,10 +227,9 @@ def generate_trace_process_specific(process_name):
     outputs = []
     processes = []
 
-    # filter the process set for the selected process such that only the selected process and its inputs and outputs are included
-    filtered_process_set = updated_process_set[
-        updated_process_set["process"].str.startswith(process_name)
-    ]
+    # filter the process set for the selected process such that only the selected process and its inputs and outputs
+    # are included
+    filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(process_name)]
 
     inputs = filtered_process_set["input"].tolist()
     outputs = filtered_process_set["output"].tolist()
@@ -277,7 +272,8 @@ def generate_trace_process_specific(process_name):
 
         nodes.append(process_name)
 
-        # right now, only single process names can be searched for, not multiple, so the for loop is not necessary but kept for future use
+        # right now, only single process names can be searched for, not multiple, so the for loop is not necessary but
+        # kept for future use
         for input_node in input_list:
             input_node = input_node.strip()
             if input_node not in nodes:
@@ -325,7 +321,8 @@ def generate_trace_process_specific(process_name):
 
         # the process node should be displayed in the center, the inputs on the left, and the outputs on the right
         # the appropriate coordinates have to be assigned to each node
-        # the y-coordinates of the inputs and outputs should be that they are evenly distributed around 0, which is the y-coordinate of the process node
+        # the y-coordinates of the inputs and outputs should be that they are evenly distributed around 0, which is the
+        # y-coordinate of the process node
 
         Xn = []
         Yn = []
@@ -379,11 +376,13 @@ def generate_trace_process_specific(process_name):
         data = [edge_trace, node_trace]
 
         return data
-    
+
 
 def generate_trace_commodity_specific(commodity_name, selected_sectors):
     """
-    Generates the trace for the selected commodity. All processes that produce the selected commodity are displayed to the left of the commodity, all processes that consume the selected commodity are displayed to the right of the commodity.
+    Generates the trace for the selected commodity. All processes that produce the selected commodity are displayed to
+    the left of the commodity, all processes that consume the selected commodity are displayed to the right of the
+    commodity.
 
     Parameters
     ----------
@@ -408,9 +407,7 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
     processes = []
 
     # filter process set for the selected sectors
-    updated_process_set = process_set[
-        process_set["process"].str.startswith(tuple(selected_sectors))
-    ]
+    updated_process_set = process_set[process_set["process"].str.startswith(tuple(selected_sectors))]
 
     # filter the process set to only include processes that produce or consume the selected commodity
     filtered_process_set = updated_process_set[
@@ -438,8 +435,9 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
         output_value = outputs[i]
         process_value = processes[i]
 
-        # if the commodity is an input of the process, the process is added to the nodes list and the edge is added to the edges list
-        # if the commodity is an output of the process, the process is added to the nodes list and the edge is added to the edges list
+        # if the commodity is an input of the process, the process is added to the nodes list and the edge is added to
+        # the edges list if the commodity is an output of the process, the process is added to the nodes list and the
+        # edge is added to the edges list
         if commodity_name in input_value:
             nodes.append(process_value)
             edges.append((nodes.index(commodity_name), nodes.index(process_value)))
@@ -457,8 +455,8 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
         node_color.append(assign_color(node, processes))
         node_shape.append(assign_shape(node, processes))
 
-    # the commodity node should be displayed in the center, the processes where it is an output on the left and the processes where it is an input on the right
-    # the appropriate coordinates have to be assigned to each node
+    # the commodity node should be displayed in the center, the processes where it is an output on the left and the
+    # processes where it is an input on the right the appropriate coordinates have to be assigned to each node
 
     Xn = []
     Yn = []
@@ -467,7 +465,8 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
     Xn += [0]
     Yn += [0]
 
-    # we need two counters, one for the inputs and one for the outputs, to calculate the y-coordinates of the processes, as i iterates over the node list
+    # we need two counters, one for the inputs and one for the outputs, to calculate the y-coordinates of the
+    # processes, as i iterates over the node list
     j = 0
     k = 0
 
@@ -520,8 +519,9 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
 def assign_color(node, processes):
     """Assigns a color to each node, depending on their sector.
 
-    For processes, the colors chosen are red for power, green for x2x, blue for industry, yellow for transport, magenta for heat.
-    For inputs and outputs, the colors chosen are dark red for primary, red for secondary, orange for exogenous, light orange for intermediate.
+    For processes, the colors chosen are red for power, green for x2x, blue for industry, yellow for transport, magenta
+    for heat. For inputs and outputs, the colors chosen are dark red for primary, red for secondary, orange for
+    exogenous, light orange for intermediate.
 
     Parameters
     ----------
@@ -568,7 +568,7 @@ def assign_color(node, processes):
             color = "rgb(128, 128, 128)"
 
         return color
-    
+
 
 def assign_shape(node, processes):
     """Assigns a shape to each node, depending on whether it is a process or an input/output.
@@ -712,7 +712,8 @@ def generate_Graph(
                 fig.add_trace(traces[0])
                 fig.add_trace(traces[1])
         elif seperate_commodities == "agg":
-            # if commodities are aggregated, the selected sectors are combined to one string to use them in the generate_trace function
+            # if commodities are aggregated, the selected sectors are combined to one string to use them in the
+            # generate_trace function
             traces = generate_trace("".join(selected_sectors), algorithm, "agg")
             fig.add_trace(traces[0])
             fig.add_trace(traces[1])
@@ -723,9 +724,7 @@ def generate_Graph(
         fig.add_trace(traces[1])
 
     elif commodity_specific:
-        traces = generate_trace_commodity_specific(
-            commodity_specific, selected_sectors
-        )
+        traces = generate_trace_commodity_specific(commodity_specific, selected_sectors)
         fig.add_trace(traces[0])
         fig.add_trace(traces[1])
 

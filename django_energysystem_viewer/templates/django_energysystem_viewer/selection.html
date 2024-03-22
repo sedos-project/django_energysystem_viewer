@@ -5,24 +5,24 @@
   <h3>Structures:</h3>
   <form method="get">
     <select id="structures" name="structures">
-        {% for structure in structure_list %}
-        <option label="{{ structure }}">{{ structure }}</option>
-        {% endfor %}
+      {% for structure in structure_list %}<option label="{{ structure }}">{{ structure }}</option>{% endfor %}
     </select>
-    <button type="submit" formaction="{% url 'django_energysystem_viewer:abbreviations' %}">Look at Abbreviation</button>
-    <button type="submit" formaction="{% url 'django_energysystem_viewer:aggregations' %}"">Look at Aggregation</button>
-    <button type="submit" formaction="{% url 'django_energysystem_viewer:networks' %}">Look at Network</button>
+    <button type="submit"
+            formaction="{% url 'django_energysystem_viewer:abbreviations' %}">Look at Abbreviation</button>
+    <button type="submit"
+            formaction="{% url 'django_energysystem_viewer:aggregations' %}">Look at Aggregation</button>
+    <button type="submit"
+            formaction="{% url 'django_energysystem_viewer:networks' %}">Look at Network</button>
   </form>
-  
   <h3>Collections:</h3>
   <form method="get">
     {% csrf_token %}
     <select id="collections" name="collections">
-        {% for collection in collection_list %}
-        <option label="{{ collection }}">{{ collection }}</option>
-        {% endfor %}
+      {% for collection in collection_list %}<option label="{{ collection }}">{{ collection }}</option>{% endfor %}
     </select>
-    <button type="submit" formaction="{% url 'django_energysystem_viewer:processes' %}">Look at Processes</button>
-    <button type="submit" formaction="{% url 'django_energysystem_viewer:artifacts' %}">Look at Artifacts</button>
+    <button type="submit"
+            formaction="{% url 'django_energysystem_viewer:processes' %}">Look at Processes</button>
+    <button type="submit"
+            formaction="{% url 'django_energysystem_viewer:artifacts' %}">Look at Artifacts</button>
   </form>
 {% endblock content %}
