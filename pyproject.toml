@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-energysystem-viewer"
-version = "0.4.0"
+version = "0.4.2"
 description = "Django app to examine energysystem network, aggregation and search abbreviations"
 authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
 license = "MIT"
@@ -61,6 +61,7 @@ skip_glob = ["**/migrations/*.py"]
 [tool.djlint]
 indent=2
 blank_line_after_tag="load,extends,endblock"
+
 
 # ==== ruff ====
 [tool.ruff]

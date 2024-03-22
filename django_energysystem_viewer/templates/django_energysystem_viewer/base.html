@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    {% if structure_name %}Current structure: {{ structure_name }}{% endif %}
+    {% if collection_name %}Current collection: {{ collection_name }}{% endif %}
+    <form action="{% url 'django_energysystem_viewer:selection' %}">
+      <button class="btn btn-secondary" data-bs-dismiss="offcanvas">Change selection</button>
+    </form>
+  </div>
+{% endblock content %}

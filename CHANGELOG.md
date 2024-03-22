@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project tries to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+[Unreleased]
+### Added
+- selection view for selecting structure and collection
+- selection banner to show current selection
+
+## [0.4.2] - 2024-03-06
+### Changed
+- show message if process or artifact data is empty instead of empty dataframe
+
+## [0.4.1] - 2024-03-06
+### Changed
+- update data_adapter to v0.20.2
+
 ## [0.4.0] - 2024-03-06
 ### Added
 - link to collection on databus to collection, process and artifact view

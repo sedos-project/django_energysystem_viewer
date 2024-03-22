@@ -1,7 +1,6 @@
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
-from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -9,13 +8,29 @@ from django.views.generic import TemplateView
 from django_energysystem_viewer import network_graph as ng
 
 
-def get_excel_data(sheet: str):
-    data = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, sheet)
+class SelectionView(TemplateView):
+    template_name = "django_energysystem_viewer/selection.html"
+
+    def get_context_data(self, **kwargs):
+        return {
+            "structure_list": [
+                file.stem
+                for file in adapter_settings.STRUCTURES_DIR.iterdir()
+                if not file.name.startswith(".") and file.name.endswith((".xls", ".xlsx"))
+            ],
+            "collection_list": [file.name for file in adapter_settings.COLLECTIONS_DIR.iterdir() if file.is_dir()],
+        }
+
+
+def get_excel_data(file: str, sheet: str):
+    excel_filename = f"{file}.xlsx"
+    data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / excel_filename), sheet)
     return data
 
 
 def network(request):
-    process_set = get_excel_data("Process_Set")
+    structure_name = request.GET.get("structures")
+    process_set = get_excel_data(structure_name, "Process_Set")
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
@@ -42,7 +57,11 @@ def network(request):
     return render(
         request,
         "django_energysystem_viewer/network.html",
-        {"unique_processes": unique_processes, "unique_commodities": unique_commodities},
+        {
+            "unique_processes": unique_processes,
+            "unique_commodities": unique_commodities,
+            "structure_name": structure_name,
+        },
     )
 
 
@@ -56,14 +75,20 @@ def network_graph(request):
 
 
 def abbreviations(request):
-    abbreviations = get_excel_data("Abbreviations")
+    structure_name = request.GET.get("structures")
+    abbreviations = get_excel_data(structure_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
-    return render(request, "django_energysystem_viewer/abbreviation.html", {"abbreviation_list": abbreviation_list})
+    return render(
+        request,
+        "django_energysystem_viewer/abbreviation.html",
+        {"abbreviation_list": abbreviation_list, "structure_name": structure_name},
+    )
 
 
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
-    abbreviations = get_excel_data("Abbreviations")
+    structure_name = request.GET.get("structure")
+    abbreviations = get_excel_data(structure_name, "Abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:
@@ -77,27 +102,14 @@ def abbreviation_meaning(request):
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
-
-def aggregation_graph(request):
-    return "oi"
-
-
-class CollectionsView(TemplateView):
-    template_name = "django_energysystem_viewer/collections.html"
-
     def get_context_data(self, **kwargs):
-        return {
-            "collections": {
-                file.name: collection.get_collection_meta(file.name)["name"]
-                for file in adapter_settings.COLLECTIONS_DIR.iterdir()
-                if file.is_dir()
-            }
-        }
+        structure_name = self.request.GET.get("structures")
+        return {"structure_name": structure_name}
 
 
 class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
-        collection_name = kwargs["collection_name"]
+        collection_name = self.request.GET.get("collections")
         collection_url = collection.get_collection_meta(collection_name)["name"]
         process_name = kwargs.get("process_name", self.request.GET.get("process"))
         if not process_name:
@@ -111,8 +123,8 @@ class ProcessDetailMixin:
         return {
             "collection_name": collection_name,
             "artifacts": artifacts,
-            "scalars": process.scalars.to_html(),
-            "timeseries": process.timeseries.to_html(),
+            "scalars": process.scalars.to_html() if not process.scalars.empty else "No data available",
+            "timeseries": process.timeseries.to_html() if not process.timeseries.empty else "No data available",
         }
 
 
@@ -121,9 +133,9 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        collection_name = kwargs["collection_name"]
+        collection_name = self.request.GET.get("collections")
         processes = collection.get_processes_from_collection(collection_name)
-        context["processes"] = processes
+        context = {"collection_name": collection_name, "processes": processes, "banner_data": collection_name}
         return context
 
 
@@ -135,10 +147,14 @@ class ArtifactsView(TemplateView):
     template_name = "django_energysystem_viewer/artifacts.html"
 
     def get_context_data(self, **kwargs):
-        collection_name = kwargs["collection_name"]
+        collection_name = self.request.GET.get("collections")
         collection_url = collection.get_collection_meta(collection_name)["name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
-        context = {"collection_name": collection_name, "collection_url": collection_url, "artifacts": artifacts}
+        context = {
+            "collection_name": collection_name,
+            "collection_url": collection_url,
+            "artifacts": artifacts,
+        }
 
         # If specific artifact is queried
         artifact_name = self.request.GET.get("artifact")
@@ -170,7 +186,7 @@ class ArtifactDetailView(TemplateView):
             "processes": collection.get_collection_meta(collection_name)["artifacts"][group_name][artifact_name][
                 "names"
             ],
-            "data": artifact.data.to_html(),
+            "data": artifact.data.to_html() if not artifact.data.empty else "No data available",
             "metadata": metadataWidget.render(),
         }
 
