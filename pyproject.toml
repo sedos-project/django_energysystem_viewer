@@ -62,8 +62,6 @@ skip_glob = ["**/migrations/*.py"]
 indent=2
 blank_line_after_tag="load,extends,endblock"
 
-[tool.djlint.per-file-ignores]
-"django_energysystem_viewer/templates/django_energysystem_viewer/abbreviation.html" = "H025"
 
 # ==== ruff ====
 [tool.ruff]

@@ -16,14 +16,14 @@
              name="abbreviation"
              placeholder="Enter or select abbreviation...">
       <datalist id="abbreviations">
-        {% for abb in abbreviation_list %}<option value="{{ abb }}">{% endfor %}
-        </datalist>
-        <input type="hidden" name="structure" value="{{ banner_data }}" />
-      </form>
-      <div id="meaning"></div>
-    </div>
-  {% endblock content %}
+        {% for abb in abbreviation_list %}<option value="{{ abb }}"></option>{% endfor %}
+      </datalist>
+      <input type="hidden" name="structure" value="{{ banner_data }}" />
+    </form>
+    <div id="meaning"></div>
+  </div>
+{% endblock content %}
 
-  {% block javascript %}
-    <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
-  {% endblock javascript %}
+{% block javascript %}
+  <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
+{% endblock javascript %}
