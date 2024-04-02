@@ -6,13 +6,13 @@
     {% csrf_token %}
     <div>
       <label for="structures">Structure</label>
-      <select class="form-select" id="structures" name="structures">
+      <select class="form-select" id="structure" name="structure">
         {% for structure in structure_list %}<option label="{{ structure }}">{{ structure }}</option>{% endfor %}
       </select>
     </div>
     <div>
-      <label for="collections">Collection</label>
-      <select class="form-select" id="collections" name="collections">
+      <label for="collection">Collection</label>
+      <select class="form-select" id="collection" name="collection">
         {% for collection in collection_list %}<option label="{{ collection }}">{{ collection }}</option>{% endfor %}
       </select>
     </div>

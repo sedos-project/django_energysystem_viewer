@@ -17,7 +17,7 @@
               {% for artifact in group.list %}
                 <li>
                   <button class="btn btn-link"
-                          hx-get="/collection/{{ collection_name }}/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data"
+                          hx-get="/energysystem/artifact/{{ artifact.group }}/{{ artifact.artifact }}/{{ artifact.version }}/data?collection={{ collection_name }}"
                           hx-target="#artifact-detail">{{ artifact.artifact }} ({{ artifact.version }})</button>
                 </li>
               {% endfor %}

@@ -14,7 +14,7 @@
             {% for process in processes %}
               <li>
                 <button class="btn btn-link"
-                        hx-get="/collection/{{ collection_name }}/process/{{ process }}/data"
+                        hx-get="/energysystem/process/{{ process }}/data?collection={{ collection_name }}"
                         hx-target="#process-detail">{{ process }}</button>
               </li>
             {% endfor %}

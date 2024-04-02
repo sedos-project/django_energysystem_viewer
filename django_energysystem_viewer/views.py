@@ -29,7 +29,7 @@ def get_excel_data(file: str, sheet: str):
 
 
 def network(request):
-    structure_name = request.GET.get("structures")
+    structure_name = request.GET.get("structure")
     process_set = get_excel_data(structure_name, "Process_Set")
     unique_processes = process_set["process"].unique()
 
@@ -75,7 +75,7 @@ def network_graph(request):
 
 
 def abbreviations(request):
-    structure_name = request.GET.get("structures")
+    structure_name = request.GET.get("structure")
     abbreviations = get_excel_data(structure_name, "Abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     return render(
@@ -103,13 +103,13 @@ class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
     def get_context_data(self, **kwargs):
-        structure_name = self.request.GET.get("structures")
+        structure_name = self.request.GET.get("structure")
         return {"structure_name": structure_name}
 
 
 class ProcessDetailMixin:
     def get_context_data(self, **kwargs):
-        collection_name = self.request.GET.get("collections")
+        collection_name = self.request.GET["collection"]
         collection_url = collection.get_collection_meta(collection_name)["name"]
         process_name = kwargs.get("process_name", self.request.GET.get("process"))
         if not process_name:
@@ -133,9 +133,11 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        collection_name = self.request.GET.get("collections")
+        collection_name = self.request.GET.get("collection")
         processes = collection.get_processes_from_collection(collection_name)
-        context = {"collection_name": collection_name, "processes": processes, "banner_data": collection_name}
+        context["collection_name"] = collection_name
+        context["processes"] = processes
+        context["banner_data"] = collection_name
         return context
 
 
@@ -147,7 +149,7 @@ class ArtifactsView(TemplateView):
     template_name = "django_energysystem_viewer/artifacts.html"
 
     def get_context_data(self, **kwargs):
-        collection_name = self.request.GET.get("collections")
+        collection_name = self.request.GET.get("collection")
         collection_url = collection.get_collection_meta(collection_name)["name"]
         artifacts = collection.get_artifacts_from_collection(collection_name)
         context = {
@@ -175,7 +177,7 @@ class ArtifactDetailView(TemplateView):
     template_name = "django_energysystem_viewer/artifact_detail.html"
 
     def get_context_data(self, **kwargs):
-        collection_name = kwargs["collection_name"]
+        collection_name = self.request.GET["collection"]
         group_name = kwargs["group_name"]
         artifact_name = kwargs["artifact_name"]
         version = kwargs.get("version")

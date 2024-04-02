@@ -7,7 +7,7 @@
     <ul>
       {% for process in processes %}
         <li>
-          <a href="{% url 'django_energysystem_viewer:processes' collection_name=collection_name %}?process={{ process }}">{{ process }}</a>
+          <a href="{% url 'django_energysystem_viewer:processes' %}?collection={{ collection_name }}&structure={{ structure_name }}&process={{ process }}">{{ process }}</a>
         </li>
       {% endfor %}
     </ul>
