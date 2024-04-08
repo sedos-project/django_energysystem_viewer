@@ -6,9 +6,7 @@
   {{ block.super }}
   <div class="container">
     <h1>Aggregation Graph</h1>
-    <form hx-get="/energysystem/aggregation_graph"
-          hx-target="#aggregation_graph"
-          hx-trigger="change">
+    <form id="aggregation_form">
       <label for="sectors">Choose Sector:</label>
       <select id="sectors" name="sectors" multiple>
         <option label="Power" value="pow"></option>
@@ -25,16 +23,49 @@
              data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
              data-grid="true" />
     </form>
-    <div id="aggregation_graph"></div>
+    {# djlint:off H021 #}
+    <div id="aggregation_graph" style="width: auto; height: 800px"></div>
+    {# djlint:on #}
   </div>
 {% endblock content %}
 
 {% block javascript %}
-  <!-- Initialize the RangeSlider -->
+  <script src="{% static 'vendors/cytoscape/js/cytoscape.min.js' %}"></script>
   <script>
-    $(document).ready(function() {
-        $(".js-range-slider").ionRangeSlider();
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize cytoscape graph
+        const cy = cytoscape(
+            {
+                container: document.getElementById('aggregation_graph'),
+                elements: []
+            }
+        );
+
+        const aggregation_form = document.getElementById("aggregation_form");
+        aggregation_form.addEventListener("change", updateAggregationGraph);
+
+        function updateAggregationGraph() {
+            console.log("Get aggregation data")
+            const formData = new FormData(aggregation_form);
+            const url = "/energysystem/aggregation_graph";
+
+            // Append form data to URL
+            const queryString = new URLSearchParams(formData).toString();
+            var requestUrl = url + "?" + queryString;
+
+            fetch(requestUrl)
+                .then(response => {
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    cy.json({ elements: data["elements"] });
+                    cy.resize();
+                })
+                .catch(error => {
+                    console.error('Error requesting aggregation data:', error);
+                });
+        }
     });
   </script>
-  <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
 {% endblock javascript %}

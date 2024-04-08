@@ -1,7 +1,9 @@
+import json
+
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
@@ -105,6 +107,12 @@ class AggregationView(TemplateView):
     def get_context_data(self, **kwargs):
         structure_name = self.request.GET.get("structure")
         return {"structure_name": structure_name}
+
+
+def aggregation_graph(request):
+    # TODO: Load data and style from aggregation graph module
+    with open(adapter_settings.STRUCTURES_DIR / "example_data.json") as datafile:
+        return JsonResponse({"elements": json.load(datafile)})
 
 
 class ProcessDetailMixin:
