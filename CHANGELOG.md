@@ -6,6 +6,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ## [Unreleased]
 ### Fixed
+- read network structure from selection
 - structure and collection in URL query
 
 ## [0.5.0] - 2024-03-22

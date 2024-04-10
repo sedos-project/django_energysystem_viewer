@@ -1,11 +1,9 @@
 import igraph as ig
-import pandas as pd
 import plotly.graph_objects as go
-from django.conf import settings
 
 
 # generate the trace for the selected sector and algorithm
-def generate_trace(sector, algorithm, seperate_commodities):
+def generate_trace(process_set, sector, algorithm, seperate_commodities):
     """Generates the trace for the selected sector and algorithm.
 
     Parameters
@@ -26,11 +24,8 @@ def generate_trace(sector, algorithm, seperate_commodities):
         The combined trace of nodes and edges, including their colours and shapes.
     """
 
-    # load the process set, change the path if necessary
-    updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-
     # filter aggregations as first step
-    updated_process_set = updated_process_set[~updated_process_set["process"].str.endswith("_ag")]
+    updated_process_set = process_set[~process_set["process"].str.endswith("_ag")]
 
     # initialize the lists for the inputs, outputs and processes
     inputs = []
@@ -204,7 +199,7 @@ def generate_trace(sector, algorithm, seperate_commodities):
     return data
 
 
-def generate_trace_process_specific(process_name):
+def generate_trace_process_specific(process_set, process_name):
     """Generates the trace for the selected process.
 
     Parameters
@@ -219,9 +214,6 @@ def generate_trace_process_specific(process_name):
     list
         The combined trace of nodes and edges, including their colours and shapes."""
 
-    # load the process set, change the path if necessary
-    updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-
     # initialize the lists for the inputs, outputs and processes
     inputs = []
     outputs = []
@@ -229,7 +221,7 @@ def generate_trace_process_specific(process_name):
 
     # filter the process set for the selected process such that only the selected process and its inputs and outputs
     # are included
-    filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(process_name)]
+    filtered_process_set = process_set[process_set["process"].str.startswith(process_name)]
 
     inputs = filtered_process_set["input"].tolist()
     outputs = filtered_process_set["output"].tolist()
@@ -378,7 +370,7 @@ def generate_trace_process_specific(process_name):
         return data
 
 
-def generate_trace_commodity_specific(commodity_name, selected_sectors):
+def generate_trace_commodity_specific(process_set, commodity_name, selected_sectors):
     """
     Generates the trace for the selected commodity. All processes that produce the selected commodity are displayed to
     the left of the commodity, all processes that consume the selected commodity are displayed to the right of the
@@ -397,9 +389,6 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
     -------
     list
         The combined trace of nodes and edges, including their colours and shapes."""
-
-    # load the process set, change the path if necessary
-    process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
 
     # initialize the lists for the inputs, outputs and processes
     inputs = []
@@ -647,6 +636,7 @@ def calculate_offset(sector, algorithm):
 
 # generate the graph
 def generate_Graph(
+    process_set,
     selected_sectors,
     algorithm,
     seperate_commodities,
@@ -708,23 +698,23 @@ def generate_Graph(
         # add traces for each selected sector and depending on whether the commodities are seperated or aggregated
         if seperate_commodities == "sep":
             for sector in selected_sectors:
-                traces = generate_trace(sector, algorithm, "sep")
+                traces = generate_trace(process_set, sector, algorithm, "sep")
                 fig.add_trace(traces[0])
                 fig.add_trace(traces[1])
         elif seperate_commodities == "agg":
             # if commodities are aggregated, the selected sectors are combined to one string to use them in the
             # generate_trace function
-            traces = generate_trace("".join(selected_sectors), algorithm, "agg")
+            traces = generate_trace(process_set, "".join(selected_sectors), algorithm, "agg")
             fig.add_trace(traces[0])
             fig.add_trace(traces[1])
 
     elif process_specific:
-        traces = generate_trace_process_specific(process_specific)
+        traces = generate_trace_process_specific(process_set, process_specific)
         fig.add_trace(traces[0])
         fig.add_trace(traces[1])
 
     elif commodity_specific:
-        traces = generate_trace_commodity_specific(commodity_specific, selected_sectors)
+        traces = generate_trace_commodity_specific(process_set, commodity_specific, selected_sectors)
         fig.add_trace(traces[0])
         fig.add_trace(traces[1])
 

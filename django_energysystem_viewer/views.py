@@ -66,12 +66,14 @@ def network(request):
 
 
 def network_graph(request):
+    structure_name = request.GET.get("structure")
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
-    return HttpResponse(ng.generate_Graph(sectors, mapping, sep_agg, process, commodity).to_html())
+    process_set = get_excel_data(structure_name, "Process_Set")
+    return HttpResponse(ng.generate_Graph(process_set, sectors, mapping, sep_agg, process, commodity).to_html())
 
 
 def abbreviations(request):

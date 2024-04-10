@@ -13,6 +13,7 @@
           <form hx-get="/energysystem/network_graph"
                 hx-target="#network_graph"
                 hx-trigger="change">
+            <input name="structure" value="{{ structure_name }}" hidden>
             <label for="mapping">Mapping:</label>
             <select id="mapping" name="mapping">
               <option label="dav" value="dav"></option>
