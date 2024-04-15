@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from django_energysystem_viewer import network_graph as ng
+from django_energysystem_viewer import aggregation_graph as ag
 
 
 class SelectionView(TemplateView):
@@ -68,13 +69,16 @@ def network(request):
 
 
 def network_graph(request):
+    # # load the process set, change the path if necessary
+    structure_name = request.GET.get("structure") #TODO: check why request yields None
+    # structure_name = 'SEDOS_Stahlindustrie' #'SEDOS_Modellstruktur'
+    updated_process_set = get_excel_data(structure_name, "Process_Set")
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
-    return HttpResponse(ng.generate_Graph(sectors, mapping, sep_agg, process, commodity).to_html())
-
+    return HttpResponse(ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html())
 
 def abbreviations(request):
     structure_name = request.GET.get("structure")
@@ -110,9 +114,12 @@ class AggregationView(TemplateView):
 
 
 def aggregation_graph(request):
+    # structure_name = request.GET.get("structure")
+    # return HttpResponse(ag.generate_aggregation_graph(structure_name).to_html())
     # TODO: Load data and style from aggregation graph module
     with open(adapter_settings.STRUCTURES_DIR / "example_data.json") as datafile:
         return JsonResponse({"elements": json.load(datafile)})
+
 
 
 class ProcessDetailMixin:

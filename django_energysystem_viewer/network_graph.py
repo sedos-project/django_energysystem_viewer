@@ -5,7 +5,7 @@ from django.conf import settings
 
 
 # generate the trace for the selected sector and algorithm
-def generate_trace(sector, algorithm, seperate_commodities):
+def generate_trace(updated_process_set, sector, algorithm, seperate_commodities):
     """Generates the trace for the selected sector and algorithm.
 
     Parameters
@@ -26,11 +26,8 @@ def generate_trace(sector, algorithm, seperate_commodities):
         The combined trace of nodes and edges, including their colours and shapes.
     """
 
-    # load the process set, change the path if necessary
-    updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-
     # filter aggregations as first step
-    updated_process_set = updated_process_set[~updated_process_set["process"].str.endswith("_ag")]
+    # updated_process_set = updated_process_set[~updated_process_set["process"].str.endswith("_ag")]
 
     # initialize the lists for the inputs, outputs and processes
     inputs = []
@@ -38,16 +35,15 @@ def generate_trace(sector, algorithm, seperate_commodities):
     processes = []
 
     # in the case that the commodities are seperate, the nodes and edges are created for each sector seperately
-    # in the case that the commodities are aggregated, the nodes and edges of the selected sectors are created together
     if seperate_commodities == "sep":
         filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector)]
 
         inputs = filtered_process_set["input"].tolist()
         outputs = filtered_process_set["output"].tolist()
         processes = filtered_process_set["process"].tolist()
-
+    # in the case that the commodities are aggregated, the nodes and edges of the selected sectors are created together
     elif seperate_commodities == "agg":
-        sector_abbrvs = ["pow", "x2x", "ind", "tra", "hea"]
+        sector_abbrvs = ["pow", "x2x", "ind", "tra", "hea", "hel"]
         for sector_abbrv in sector_abbrvs:
             if sector_abbrv in sector:
                 filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector_abbrv)]
@@ -160,12 +156,10 @@ def generate_trace(sector, algorithm, seperate_commodities):
     for e in edges:
         Xe += [layt[e[0]][0] + x_offset, layt[e[1]][0] + x_offset, None]
         Ye += [layt[e[0]][1] + y_offset, layt[e[1]][1] + y_offset, None]
-        # Ze += [layt[e[0]][2], layt[e[1]][2], None] for 3d plot
 
     edge_trace = go.Scatter(
         x=Xe,
         y=Ye,
-        # z=Ze,
         mode="lines+markers",
         line=dict(color="rgb(125,125,125)", width=1),
         hoverinfo="none",
@@ -186,7 +180,6 @@ def generate_trace(sector, algorithm, seperate_commodities):
     node_trace = go.Scatter(
         x=Xn,
         y=Yn,
-        # z=Zn,
         mode="markers",
         name="actors",
         marker=dict(
@@ -541,6 +534,7 @@ def assign_color(node, processes):
             "ind": "rgb(255, 0, 255)",  # Magenta
             "tra": "#17cda6",  # Turquoise
             "hea": "rgb(255, 0, 0)",  # Red
+            "hel": "rgb(0, 0, 0)",  # black
         }
 
         sector = node[:3]  # Extract the first three letters of the node name
@@ -647,6 +641,7 @@ def calculate_offset(sector, algorithm):
 
 # generate the graph
 def generate_Graph(
+    updated_process_set,
     selected_sectors,
     algorithm,
     seperate_commodities,
@@ -687,9 +682,8 @@ def generate_Graph(
     )
 
     graph_layout = go.Layout(
-        width=960,
-        height=800,
-        plot_bgcolor="white",
+        autosize=True,
+        height= 650,
         showlegend=False,
         hovermode="closest",
         hoverdistance=-1,
@@ -697,9 +691,8 @@ def generate_Graph(
         scene=dict(
             xaxis=dict(axis),
             yaxis=dict(axis),
-            # zaxis=dict(axis),
         ),
-        margin=dict(autoexpand=True),
+        margin=dict(l=0, r=0, t=0, b=0, autoexpand=False),
     )
 
     fig = go.Figure(layout=graph_layout)
@@ -708,13 +701,13 @@ def generate_Graph(
         # add traces for each selected sector and depending on whether the commodities are seperated or aggregated
         if seperate_commodities == "sep":
             for sector in selected_sectors:
-                traces = generate_trace(sector, algorithm, "sep")
+                traces = generate_trace(updated_process_set, sector, algorithm, "sep")
                 fig.add_trace(traces[0])
                 fig.add_trace(traces[1])
         elif seperate_commodities == "agg":
             # if commodities are aggregated, the selected sectors are combined to one string to use them in the
             # generate_trace function
-            traces = generate_trace("".join(selected_sectors), algorithm, "agg")
+            traces = generate_trace(updated_process_set, "".join(selected_sectors), algorithm, "agg")
             fig.add_trace(traces[0])
             fig.add_trace(traces[1])
 

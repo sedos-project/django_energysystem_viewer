@@ -6,35 +6,36 @@
   {{ block.super }}
   <div class="container">
     <div class="row">
-      <div class="col-3">
+      <div class="col-2">
         <!-- Network Graph Forms -->
         <div class="row">
-          <h1>Network Graph</h1>
+          <h3>Network Graph</h3>
           <form hx-get="/energysystem/network_graph"
                 hx-target="#network_graph"
                 hx-trigger="change">
             <label for="mapping">Mapping:</label>
             <select id="mapping" name="mapping">
-              <option label="dav" value="dav"></option>
+              <option label="fr" value="fr" selected></option>
               <option label="drl" value="drl"></option>
-              <option label="fr" value="fr"></option>
+              <option label="dav" value="dav"></option>
             </select>
             <br>
             <label for="sectors">Sectors:</label>
             <select id="sectors" name="sectors" multiple>
-              <option label="Power" value="pow"></option>
-              <option label="X2X" value="x2x"></option>
-              <option label="Industry" value="ind"></option>
-              <option label="Mobility" value="mob"></option>
+              <option label="Power" value="pow" selected></option>
+              <option label="X2X" value="x2x" selected></option>
+              <option label="Industry" value="ind" ></option>
+              <option label="Transport" value="tra"></option>
               <option label="Heat" value="hea"></option>
+              <option label="Helper" value="hel"></option>
             </select>
             <label for="seperate_join">Sectors seperate or joined:</label>
             <br>
+            <input type="radio" id="joined" name="seperate_join" value="agg" checked>
+            <label for="joined">Aggregate Sectors</label>
+            <br>
             <input type="radio" id="seperate" name="seperate_join" value="sep">
             <label for="seperate">Seperate Sectors</label>
-            <br>
-            <input type="radio" id="joined" name="seperate_join" value="agg">
-            <label for="joined">Aggregate Sectors</label>
             <br>
             <div>You can choose to filter a specific process or a specific commodity.</div>
             <div id="proc_comm"
@@ -51,15 +52,16 @@
               <input list="commodities"
                      id="commodity"
                      name="commodity"
-                     placeholder="Enter or select process...">
+                     placeholder="Enter or select commodity...">
               <datalist id="commodities">
                 {% for commodity in unique_commodities %}<option value="{{ commodity }}"></option>{% endfor %}
               </datalist>
             </div>
+            <input type="hidden" name="structure" value="{{ structure_name }}" />
           </form>
         </div>
       </div>
-      <div class="col-7">
+      <div class="col-8">
         <!-- Network Graph Output -->
         <div id="network_graph"></div>
       </div>
@@ -125,7 +127,7 @@
         <div class="row">
           <div>
             <div class="badge bg-primary-subtle border border-secondary"></div>
-            <span>Industrial Intermediate Product</span>
+            <span>Industrial</span>
           </div>
         </div>
         <div class="row">
