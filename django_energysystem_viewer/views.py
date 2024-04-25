@@ -61,6 +61,7 @@ def network(request):
         request,
         "django_energysystem_viewer/network.html",
         {
+            "network_graph": ng.generate_Graph(process_set, ["pow","x2x"], "fr", "agg", None, None).to_html(),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -70,7 +71,7 @@ def network(request):
 
 def network_graph(request):
     # # load the process set, change the path if necessary
-    structure_name = request.GET.get("structure") #TODO: check why request yields None
+    structure_name = request.GET.get("structure")
     # structure_name = 'SEDOS_Stahlindustrie' #'SEDOS_Modellstruktur'
     updated_process_set = get_excel_data(structure_name, "Process_Set")
     sectors = request.GET.getlist("sectors")
@@ -112,14 +113,11 @@ class AggregationView(TemplateView):
         structure_name = self.request.GET.get("structure")
         return {"structure_name": structure_name}
 
-
 def aggregation_graph(request):
-    # structure_name = request.GET.get("structure")
-    # return HttpResponse(ag.generate_aggregation_graph(structure_name).to_html())
-    # TODO: Load data and style from aggregation graph module
-    with open(adapter_settings.STRUCTURES_DIR / "example_data.json") as datafile:
-        return JsonResponse({"elements": json.load(datafile)})
-
+    structure_name = request.GET.get("structure")
+    file = str(adapter_settings.STRUCTURES_DIR / f"{structure_name}.xlsx")
+    elements = ag.generate_aggregation_graph(file)
+    return JsonResponse({"elements":elements}, safe=False)
 
 
 class ProcessDetailMixin:

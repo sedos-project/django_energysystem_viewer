@@ -31,13 +31,13 @@ def generate_aggregation_graph(file):
     elements = elements_after_collapse(collapsed_nodes, nodes, edges)
 
     # create tree graph
-    tree_graph = create_tree(elements)
+    # tree_graph = create_tree(elements)
 
-    collapse_expand_callback(app, collapsed_nodes, file)
+    # collapse_expand_callback(app, collapsed_nodes, file)
 
-    detail_level_callback(app, file, collapsed_nodes)
+    # detail_level_callback(app, file, collapsed_nodes)
 
-    return tree_graph
+    return elements
 
 
 def get_background_color(cell_address, sheet):
@@ -402,210 +402,210 @@ def elements_after_collapse(collapsed_nodes, nodes, edges):
     return nodes_after_collapse + edges_after_collapse
 
 
-def create_legend(sector):
-    """Creates the legend of the aggregation graph.
+# def create_legend(sector):
+#     """Creates the legend of the aggregation graph.
+#
+#     Parameters
+#     ----------
+#     sector: str
+#         The sector of the aggregation graph.
+#
+#     Returns
+#     -------
+#     dbc.Row
+#         The legend of the aggregation graph."""
+#
+#     legend = [dbc.Col(html.H6("Aggregation Steps"))]
+#
+#     if sector == "pow":
+#         aggregation_step_1 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
+#         aggregation_step_2 = None
+#         aggregation_step_3 = None
+#     elif sector == "tra":
+#         aggregation_step_1 = (
+#             "Distance Type (eg: national, european, ...)"
+#         )
+#         aggregation_step_2 = "Vehicle Size (eg. small, medium, large, ...)"
+#         aggregation_step_3 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
+#     elif sector == "x2x":
+#         aggregation_step_1 = "Technology Type"
+#         aggregation_step_2 = None
+#         aggregation_step_3 = None
+#     elif sector == "ind":
+#         aggregation_step_1 = "Process Route"
+#         aggregation_step_2 = None
+#         aggregation_step_3 = None
+#     elif sector == "hea":
+#         aggregation_step_1 = "Building Type"
+#         aggregation_step_2 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
+#         aggregation_step_3 = None
+#
+#     # size should be 9 for one aggregation step, 4 for two aggregation steps and 3 for three aggregation steps
+#     if aggregation_step_3 is not None and aggregation_step_2 is not None:
+#         size = 3
+#     elif aggregation_step_2 is not None:
+#         size = 4
+#     else:
+#         size = 9
+#
+#     if aggregation_step_3 is not None:
+#         legend.append(
+#             dbc.Col(
+#                 [
+#                     html.Div(
+#                         [
+#                             html.Div(
+#                                 style={
+#                                     "width": "15px",
+#                                     "height": "15px",
+#                                     "background-color": "red",
+#                                     "display": "inline-block",
+#                                     "margin-right": "5px",
+#                                 }
+#                             ),
+#                             html.Span(
+#                                 aggregation_step_3,
+#                                 style={"font-size": "14px"},
+#                             ),
+#                         ]
+#                     ),
+#                 ],
+#                 width={"size": size},
+#             ),
+#         )
+#
+#     if aggregation_step_2 is not None:
+#         legend.append(
+#             dbc.Col(
+#                 [
+#                     html.Div(
+#                         [
+#                             html.Div(
+#                                 style={
+#                                     "width": "15px",
+#                                     "height": "15px",
+#                                     "background-color": "blue",
+#                                     "display": "inline-block",
+#                                     "margin-right": "5px",
+#                                 }
+#                             ),
+#                             html.Span(
+#                                 aggregation_step_2,
+#                                 style={"font-size": "14px"},
+#                             ),
+#                         ]
+#                     ),
+#                 ],
+#                 width={"size": size},
+#             ),
+#         )
+#
+#     if aggregation_step_1 is not None:
+#         legend.append(
+#             dbc.Col(
+#                 [
+#                     html.Div(
+#                         [
+#                             html.Div(
+#                                 style={
+#                                     "width": "15px",
+#                                     "height": "15px",
+#                                     "background-color": "green",
+#                                     "display": "inline-block",
+#                                     "margin-right": "5px",
+#                                 }
+#                             ),
+#                             html.Span(
+#                                 aggregation_step_1,
+#                                 style={"font-size": "14px"},
+#                             ),
+#                         ]
+#                     ),
+#                 ],
+#                 width={"size": size},
+#             ),
+#         )
+#
+#         return dbc.Row(legend)
 
-    Parameters
-    ----------
-    sector: str
-        The sector of the aggregation graph.
 
-    Returns
-    -------
-    dbc.Row
-        The legend of the aggregation graph."""
-
-    legend = [dbc.Col(html.H6("Aggregation Steps"))]
-
-    if sector == "pow":
-        aggregation_step_1 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
-        aggregation_step_2 = None
-        aggregation_step_3 = None
-    elif sector == "tra":
-        aggregation_step_1 = (
-            "Distance Type (eg: national, european, ...)"
-        )
-        aggregation_step_2 = "Vehicle Size (eg. small, medium, large, ...)"
-        aggregation_step_3 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
-    elif sector == "x2x":
-        aggregation_step_1 = "Technology Type"
-        aggregation_step_2 = None
-        aggregation_step_3 = None
-    elif sector == "ind":
-        aggregation_step_1 = "Process Route"
-        aggregation_step_2 = None
-        aggregation_step_3 = None
-    elif sector == "hea":
-        aggregation_step_1 = "Building Type"
-        aggregation_step_2 = "Fuel Type (eg. hydrogen, diesel, gasoline, ...)"
-        aggregation_step_3 = None
-
-    # size should be 9 for one aggregation step, 4 for two aggregation steps and 3 for three aggregation steps
-    if aggregation_step_3 is not None and aggregation_step_2 is not None:
-        size = 3
-    elif aggregation_step_2 is not None:
-        size = 4
-    else:
-        size = 9
-
-    if aggregation_step_3 is not None:
-        legend.append(
-            dbc.Col(
-                [
-                    html.Div(
-                        [
-                            html.Div(
-                                style={
-                                    "width": "15px",
-                                    "height": "15px",
-                                    "background-color": "red",
-                                    "display": "inline-block",
-                                    "margin-right": "5px",
-                                }
-                            ),
-                            html.Span(
-                                aggregation_step_3,
-                                style={"font-size": "14px"},
-                            ),
-                        ]
-                    ),
-                ],
-                width={"size": size},
-            ),
-        )
-
-    if aggregation_step_2 is not None:
-        legend.append(
-            dbc.Col(
-                [
-                    html.Div(
-                        [
-                            html.Div(
-                                style={
-                                    "width": "15px",
-                                    "height": "15px",
-                                    "background-color": "blue",
-                                    "display": "inline-block",
-                                    "margin-right": "5px",
-                                }
-                            ),
-                            html.Span(
-                                aggregation_step_2,
-                                style={"font-size": "14px"},
-                            ),
-                        ]
-                    ),
-                ],
-                width={"size": size},
-            ),
-        )
-
-    if aggregation_step_1 is not None:
-        legend.append(
-            dbc.Col(
-                [
-                    html.Div(
-                        [
-                            html.Div(
-                                style={
-                                    "width": "15px",
-                                    "height": "15px",
-                                    "background-color": "green",
-                                    "display": "inline-block",
-                                    "margin-right": "5px",
-                                }
-                            ),
-                            html.Span(
-                                aggregation_step_1,
-                                style={"font-size": "14px"},
-                            ),
-                        ]
-                    ),
-                ],
-                width={"size": size},
-            ),
-        )
-
-        return dbc.Row(legend)
-
-
-def create_tree(elements):
-    """Creates the tree graph as a dash component.
-
-    Parameters
-    ----------
-    elements: list
-        The list of all nodes and edges.
-
-    Returns
-    -------
-    html.Div
-        The tree graph and the legend."""
-
-    # get the first three letters of the first node for the sector
-    sector = elements[0]["data"]["id"][:3]
-
-    legend = create_legend(sector)
-
-    layout = (
-        dbc.Row(html.Div(legend, id="aggregation-legnd")),
-        # dbc.Row(
-        #     html.H6("Tip: Click node to collapse/expand it (orange node is collapsed)")
-        # ),
-        dbc.Row(
-            html.Div(
-                [
-                    cyto.Cytoscape(
-                        id="cytoscape-tree",
-                        layout={"name": "preset", "zoom": 0.2},
-                        style={"width": "100%", "height": "800px"},
-                        stylesheet=[
-                            {
-                                "selector": "node",
-                                "style": {
-                                    "label": "data(id)",
-                                    "font-size": "100",
-                                    "width": "75",
-                                    "height": "75",
-                                },
-                            },
-                            {
-                                "selector": ".aggregation_level_1",
-                                "style": {"background-color": "green"},
-                            },
-                            {
-                                "selector": ".aggregation_level_2",
-                                "style": {"background-color": "blue"},
-                            },
-                            {
-                                "selector": ".aggregation_level_3",
-                                "style": {"background-color": "red"},
-                            },
-                            {
-                                "selector": ".collapsed",
-                                "style": {"background-color": "orange"},
-                            },
-                            {
-                                "selector": ".aggregation_step_1",
-                                "style": {"line-color": "green"},
-                            },
-                            {
-                                "selector": ".aggregation_step_2",
-                                "style": {"line-color": "blue"},
-                            },
-                            {
-                                "selector": ".aggregation_step_3",
-                                "style": {"line-color": "red"},
-                            },
-                        ],
-                        elements=elements,
-                    )
-                ]
-            )
-        ),
-    )
-
-    return html.Div(layout)
+# def create_tree(elements):
+#     """Creates the tree graph as a dash component.
+#
+#     Parameters
+#     ----------
+#     elements: list
+#         The list of all nodes and edges.
+#
+#     Returns
+#     -------
+#     html.Div
+#         The tree graph and the legend."""
+#
+#     # get the first three letters of the first node for the sector
+#     sector = elements[0]["data"]["id"][:3]
+#
+#     legend = create_legend(sector)
+#
+#     layout = (
+#         dbc.Row(html.Div(legend, id="aggregation-legnd")),
+#         # dbc.Row(
+#         #     html.H6("Tip: Click node to collapse/expand it (orange node is collapsed)")
+#         # ),
+#         dbc.Row(
+#             html.Div(
+#                 [
+#                     cyto.Cytoscape(
+#                         id="cytoscape-tree",
+#                         layout={"name": "preset", "zoom": 0.2},
+#                         style={"width": "100%", "height": "800px"},
+#                         stylesheet=[
+#                             {
+#                                 "selector": "node",
+#                                 "style": {
+#                                     "label": "data(id)",
+#                                     "font-size": "100",
+#                                     "width": "75",
+#                                     "height": "75",
+#                                 },
+#                             },
+#                             {
+#                                 "selector": ".aggregation_level_1",
+#                                 "style": {"background-color": "green"},
+#                             },
+#                             {
+#                                 "selector": ".aggregation_level_2",
+#                                 "style": {"background-color": "blue"},
+#                             },
+#                             {
+#                                 "selector": ".aggregation_level_3",
+#                                 "style": {"background-color": "red"},
+#                             },
+#                             {
+#                                 "selector": ".collapsed",
+#                                 "style": {"background-color": "orange"},
+#                             },
+#                             {
+#                                 "selector": ".aggregation_step_1",
+#                                 "style": {"line-color": "green"},
+#                             },
+#                             {
+#                                 "selector": ".aggregation_step_2",
+#                                 "style": {"line-color": "blue"},
+#                             },
+#                             {
+#                                 "selector": ".aggregation_step_3",
+#                                 "style": {"line-color": "red"},
+#                             },
+#                         ],
+#                         elements=elements,
+#                     )
+#                 ]
+#             )
+#         ),
+#     )
+#
+#     return html.Div(layout)
 
 #
 # def collapse_expand_callback(app, collapsed_nodes, file):

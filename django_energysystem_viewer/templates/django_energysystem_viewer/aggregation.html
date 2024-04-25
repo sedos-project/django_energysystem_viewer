@@ -7,25 +7,24 @@
   <div class="container">
     <h1>Aggregation Graph</h1>
     <form id="aggregation_form">
-      <label for="sectors">Choose Sector:</label>
-      <select id="sectors" name="sectors" multiple>
-        <option label="Power" value="pow"></option>
-        <option label="X2X" value="x2x"></option>
-        <option label="Industry" value="ind"></option>
-        <option label="Transport" value="tra"></option>
-        <option label="Heat" value="hea"></option>
-      </select>
-      <label for="lod">Choose the desired level of detail with the slider:</label>
-      <input type="text"
-             class="js-range-slider"
-             name="lod"
-             value=""
-             data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
-             data-grid="true" />
+          <input type="hidden" name="structure" value="{{ structure_name }}" />
+          <label for="sectors">Choose Sector:</label>
+          <select id="sectors" name="sectors" multiple>
+            <option label="Power" value="pow"></option>
+            <option label="X2X" value="x2x"></option>
+            <option label="Industry" value="ind"></option>
+            <option label="Transport" value="tra"></option>
+            <option label="Heat" value="hea"></option>
+          </select>
+          <label for="lod">Choose the desired level of detail with the slider:</label>
+          <input type="text"
+                 class="js-range-slider"
+                 name="lod"
+                 value=""
+                 data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
+                 data-grid="true" />
     </form>
-    {# djlint:off H021 #}
     <div id="aggregation_graph" style="width: auto; height: 800px"></div>
-    {# djlint:on #}
   </div>
 {% endblock content %}
 
@@ -33,13 +32,20 @@
   <script src="{% static 'vendors/cytoscape/js/cytoscape.min.js' %}"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Initialize cytoscape graph
-        const cy = cytoscape(
-            {
-                container: document.getElementById('aggregation_graph'),
-                elements: []
-            }
-        );
+        const cy = cytoscape({
+            container: document.getElementById('aggregation_graph'),
+            style: [
+              { selector: 'node', style: {'label': 'data(id)', 'font-size': '100', 'width': '75', 'height': '75'} },
+              { selector: '.aggregation_level_1', style: {'background-color': 'green'} },
+              { selector: '.aggregation_level_2', style: {'background-color': 'blue'} },
+              { selector: '.aggregation_level_3', style: {'background-color': 'red'} },
+              { selector: '.collapsed', style: {'background-color': 'orange'} },
+              { selector: '.aggregation_step_1', style: {'line-color': 'green'} },
+              { selector: '.aggregation_step_2', style: {'line-color': 'blue'} },
+              { selector: '.aggregation_step_3', style: {'line-color': 'red'} },
+            ],
+            elements: []
+        });
 
         const aggregation_form = document.getElementById("aggregation_form");
         aggregation_form.addEventListener("change", updateAggregationGraph);
@@ -62,9 +68,7 @@
                     cy.json({ elements: data["elements"] });
                     cy.resize();
                 })
-                .catch(error => {
-                    console.error('Error requesting aggregation data:', error);
-                });
+                .catch(error => console.error('Error requesting aggregation data:', error));
         }
     });
   </script>

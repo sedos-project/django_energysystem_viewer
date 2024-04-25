@@ -13,6 +13,7 @@
           <form hx-get="/energysystem/network_graph"
                 hx-target="#network_graph"
                 hx-trigger="change">
+          <input type="hidden" name="structure" value="{{ structure_name }}" />
             <label for="mapping">Mapping:</label>
             <select id="mapping" name="mapping">
               <option label="fr" value="fr" selected></option>
@@ -57,13 +58,12 @@
                 {% for commodity in unique_commodities %}<option value="{{ commodity }}"></option>{% endfor %}
               </datalist>
             </div>
-            <input type="hidden" name="structure" value="{{ structure_name }}" />
           </form>
         </div>
       </div>
       <div class="col-8">
         <!-- Network Graph Output -->
-        <div id="network_graph"></div>
+        <div id="network_graph">{{ network_graph|safe }}</div>
       </div>
       <div class="col-2">
         <!-- Legend -->
@@ -142,6 +142,7 @@
 {% endblock content %}
 
 {% block javascript %}
+    {{ block.super }}
   <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}
