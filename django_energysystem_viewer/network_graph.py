@@ -683,7 +683,7 @@ def generate_Graph(
 
     graph_layout = go.Layout(
         autosize=True,
-        height= 650,
+        height=650,
         showlegend=False,
         hovermode="closest",
         hoverdistance=-1,

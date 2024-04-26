@@ -13,7 +13,7 @@
           <form hx-get="/energysystem/network_graph"
                 hx-target="#network_graph"
                 hx-trigger="change">
-          <input type="hidden" name="structure" value="{{ structure_name }}" />
+            <input type="hidden" name="structure" value="{{ structure_name }}" />
             <label for="mapping">Mapping:</label>
             <select id="mapping" name="mapping">
               <option label="fr" value="fr" selected></option>
@@ -25,7 +25,7 @@
             <select id="sectors" name="sectors" multiple>
               <option label="Power" value="pow" selected></option>
               <option label="X2X" value="x2x" selected></option>
-              <option label="Industry" value="ind" ></option>
+              <option label="Industry" value="ind"></option>
               <option label="Transport" value="tra"></option>
               <option label="Heat" value="hea"></option>
               <option label="Helper" value="hel"></option>
@@ -142,7 +142,7 @@
 {% endblock content %}
 
 {% block javascript %}
-    {{ block.super }}
+  {{ block.super }}
   <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}

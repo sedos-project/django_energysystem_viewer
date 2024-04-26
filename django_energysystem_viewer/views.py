@@ -1,5 +1,3 @@
-import json
-
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
@@ -7,8 +5,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
-from django_energysystem_viewer import network_graph as ng
 from django_energysystem_viewer import aggregation_graph as ag
+from django_energysystem_viewer import network_graph as ng
 
 
 class SelectionView(TemplateView):
@@ -61,7 +59,7 @@ def network(request):
         request,
         "django_energysystem_viewer/network.html",
         {
-            "network_graph": ng.generate_Graph(process_set, ["pow","x2x"], "fr", "agg", None, None).to_html(),
+            "network_graph": ng.generate_Graph(process_set, ["pow", "x2x"], "fr", "agg", None, None).to_html(),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -79,7 +77,10 @@ def network_graph(request):
     sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
-    return HttpResponse(ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html())
+    return HttpResponse(
+        ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html()
+    )
+
 
 def abbreviations(request):
     structure_name = request.GET.get("structure")
@@ -113,11 +114,12 @@ class AggregationView(TemplateView):
         structure_name = self.request.GET.get("structure")
         return {"structure_name": structure_name}
 
+
 def aggregation_graph(request):
     structure_name = request.GET.get("structure")
     file = str(adapter_settings.STRUCTURES_DIR / f"{structure_name}.xlsx")
     elements = ag.generate_aggregation_graph(file)
-    return JsonResponse({"elements":elements}, safe=False)
+    return JsonResponse({"elements": elements}, safe=False)
 
 
 class ProcessDetailMixin:

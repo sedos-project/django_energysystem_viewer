@@ -28,5 +28,15 @@
 
 {% block javascript %}
   {{ block.super }}
-  <script src="https://unpkg.com/htmx.org@1.9.9"></script>
+  <script src="{% static "django_energysystem_viewer/libs/htmx.min.js" %}"></script>
+  <script src="{% static "vendors/jquery/jquery.min.js" %}"></script>
+  <script src="{% static "vendors/datatables/dataTables.js" %}"></script>
+  <script src="{% static "vendors/json-viewer/jquery.json-viewer.js" %}"></script>
+  <script src="{% static "js/tables.js" %}"></script>
 {% endblock javascript %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static "vendors/datatables/dataTables.css" %}" />
+  <link rel="stylesheet" href="{% static "vendors/json-viewer/jquery.json-viewer.css" %}" />
+{% endblock css %}
