@@ -81,6 +81,22 @@ def network_graph(request):
         ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html()
     )
 
+class AggregationView(TemplateView):
+    template_name = "django_energysystem_viewer/aggregation.html"
+
+    def get_context_data(self, **kwargs):
+        structure_name = self.request.GET.get("structure")
+        return {"structure_name": structure_name}
+
+
+def aggregation_graph(request):
+    structure_name = request.GET.get("structure")
+    file = str(adapter_settings.STRUCTURES_DIR / f"{structure_name}.xlsx")
+    sectors = request.GET["sectors"]
+    lod = request.GET["lod"]
+    elements = ag.generate_aggregation_graph(file, sectors, lod)
+    return JsonResponse({"elements": elements}, safe=False)
+
 
 def abbreviations(request):
     structure_name = request.GET.get("structure")
@@ -105,21 +121,6 @@ def abbreviation_meaning(request):
             return HttpResponse(["Abbreviation not found"])
     else:
         return HttpResponse("")
-
-
-class AggregationView(TemplateView):
-    template_name = "django_energysystem_viewer/aggregation.html"
-
-    def get_context_data(self, **kwargs):
-        structure_name = self.request.GET.get("structure")
-        return {"structure_name": structure_name}
-
-
-def aggregation_graph(request):
-    structure_name = request.GET.get("structure")
-    file = str(adapter_settings.STRUCTURES_DIR / f"{structure_name}.xlsx")
-    elements = ag.generate_aggregation_graph(file)
-    return JsonResponse({"elements": elements}, safe=False)
 
 
 class ProcessDetailMixin:

@@ -1,10 +1,7 @@
-# from dash import html, State, Input, Output
-# import dash_bootstrap_components as dbc
-# import dash_cytoscape as cyto
 from openpyxl import load_workbook
 
 
-def generate_aggregation_graph(file):
+def generate_aggregation_graph(file, sectors, lod):
     """Generates the aggregation graph as a dash component using the functions below.
 
     Parameters
@@ -20,9 +17,9 @@ def generate_aggregation_graph(file):
     collapsed_nodes = []
 
     # aggregation level initial value
-    level_of_detail = 1
+    level_of_detail = int(lod)
 
-    sector = "pow"
+    sector = sectors
 
     # create nodes and edges
     nodes, edges = generate_elements(file, level_of_detail, sector)
@@ -529,185 +526,185 @@ def elements_after_collapse(collapsed_nodes, nodes, edges):
 #         return dbc.Row(legend)
 
 
-# def create_tree(elements):
-#     """Creates the tree graph as a dash component.
-#
-#     Parameters
-#     ----------
-#     elements: list
-#         The list of all nodes and edges.
-#
-#     Returns
-#     -------
-#     html.Div
-#         The tree graph and the legend."""
-#
-#     # get the first three letters of the first node for the sector
-#     sector = elements[0]["data"]["id"][:3]
-#
-#     legend = create_legend(sector)
-#
-#     layout = (
-#         dbc.Row(html.Div(legend, id="aggregation-legnd")),
-#         # dbc.Row(
-#         #     html.H6("Tip: Click node to collapse/expand it (orange node is collapsed)")
-#         # ),
-#         dbc.Row(
-#             html.Div(
-#                 [
-#                     cyto.Cytoscape(
-#                         id="cytoscape-tree",
-#                         layout={"name": "preset", "zoom": 0.2},
-#                         style={"width": "100%", "height": "800px"},
-#                         stylesheet=[
-#                             {
-#                                 "selector": "node",
-#                                 "style": {
-#                                     "label": "data(id)",
-#                                     "font-size": "100",
-#                                     "width": "75",
-#                                     "height": "75",
-#                                 },
-#                             },
-#                             {
-#                                 "selector": ".aggregation_level_1",
-#                                 "style": {"background-color": "green"},
-#                             },
-#                             {
-#                                 "selector": ".aggregation_level_2",
-#                                 "style": {"background-color": "blue"},
-#                             },
-#                             {
-#                                 "selector": ".aggregation_level_3",
-#                                 "style": {"background-color": "red"},
-#                             },
-#                             {
-#                                 "selector": ".collapsed",
-#                                 "style": {"background-color": "orange"},
-#                             },
-#                             {
-#                                 "selector": ".aggregation_step_1",
-#                                 "style": {"line-color": "green"},
-#                             },
-#                             {
-#                                 "selector": ".aggregation_step_2",
-#                                 "style": {"line-color": "blue"},
-#                             },
-#                             {
-#                                 "selector": ".aggregation_step_3",
-#                                 "style": {"line-color": "red"},
-#                             },
-#                         ],
-#                         elements=elements,
-#                     )
-#                 ]
-#             )
-#         ),
-#     )
-#
-#     return html.Div(layout)
+def create_tree(elements):
+    """Creates the tree graph as a dash component.
 
-#
-# def collapse_expand_callback(app, collapsed_nodes, file):
-#     """Creates the callback function for the aggregation graph.
-#
-#     Parameters
-#     ----------
-#     app: dash.Dash
-#         The dash application.
-#     collapsed_nodes: list
-#         The list of all collapsed nodes.
-#     file: str
-#         The path to the Excel file of the Model Structure.
-#     """
-#
-#     @app.callback(
-#         Output("cytoscape-tree", "elements", allow_duplicate=True),
-#         Input("cytoscape-tree", "selectedNodeData"),
-#         Input("aggregation-slider", "value"),
-#         Input("aggregation-sector", "value"),
-#         State("cytoscape-tree", "elements"),
-#         prevent_initial_call=True,
-#     )
-#     def update_aggregation_graph(nodeData, value, sector, elements):
-#         """Collapses or expands the children of the the selected node.
-#
-#         Parameters
-#         ----------
-#         nodeData: list
-#             The list of all selected nodes.
-#         value: int
-#             The aggregation level.
-#         sector: str
-#             The sector of the aggregation graph.
-#         elements: list
-#             The list of all nodes and edges.
-#
-#         Returns
-#         -------
-#         list
-#             The updated list of all nodes and edges."""
-#
-#         level_of_detail = value
-#
-#         if not nodeData:
-#             return elements
-#
-#         node_id = nodeData[0]["id"]
-#
-#         if node_id in collapsed_nodes:
-#             collapsed_nodes.remove(node_id)
-#         else:
-#             collapsed_nodes.append(node_id)
-#
-#         nodes, edges = generate_elements(file, level_of_detail, sector)
-#
-#         updated_elements = elements_after_collapse(collapsed_nodes, nodes, edges)
-#         return updated_elements
+    Parameters
+    ----------
+    elements: list
+        The list of all nodes and edges.
 
-#
-# def detail_level_callback(app, file, collapsed_nodes):
-#     """Creates the callback function for the aggregation level slider.
-#
-#     Parameters
-#     ----------
-#     app: dash.Dash
-#         The dash application.
-#     file: str
-#         The path to the Excel file of the Model Structure.
-#     collapsed_nodes: list
-#         The list of all collapsed nodes."""
-#
-#     @app.callback(
-#         [Output("cytoscape-tree", "elements"), Output("aggregation-legnd", "children")],
-#         [Input("aggregation-slider", "value"), Input("aggregation-sector", "value")],
-#     )
-#     def update_detail_level(value, sector):
-#         """Updates the detail level of the aggregation graph.
-#
-#         Parameters
-#         ----------
-#         value: int
-#             The detail level.
-#         sector: str
-#             The sector of the aggregation graph.
-#
-#         Returns
-#         -------
-#         list
-#             The filtered list of all nodes and edges.
-#         """
-#         level_of_detail = value
-#
-#         # create nodes and edges
-#         nodes, edges = generate_elements(file, level_of_detail, sector)
-#
-#         collapsed_nodes.clear()
-#
-#         # elements that are to be displayed after collapsing
-#         elements = elements_after_collapse(collapsed_nodes, nodes, edges)
-#
-#         # create legend
-#         legend = create_legend(sector)
-#
-#         return elements, legend
+    Returns
+    -------
+    html.Div
+        The tree graph and the legend."""
+
+    # get the first three letters of the first node for the sector
+    sector = elements[0]["data"]["id"][:3]
+
+    # legend = create_legend(sector)
+    #
+    # layout = (
+    #     dbc.Row(html.Div(legend, id="aggregation-legnd")),
+    #     # dbc.Row(
+    #     #     html.H6("Tip: Click node to collapse/expand it (orange node is collapsed)")
+    #     # ),
+    #     dbc.Row(
+    #         html.Div(
+    #             [
+    #                 cyto.Cytoscape(
+    #                     id="cytoscape-tree",
+    #                     layout={"name": "preset", "zoom": 0.2},
+    #                     style={"width": "100%", "height": "800px"},
+    #                     stylesheet=[
+    #                         {
+    #                             "selector": "node",
+    #                             "style": {
+    #                                 "label": "data(id)",
+    #                                 "font-size": "100",
+    #                                 "width": "75",
+    #                                 "height": "75",
+    #                             },
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_level_1",
+    #                             "style": {"background-color": "green"},
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_level_2",
+    #                             "style": {"background-color": "blue"},
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_level_3",
+    #                             "style": {"background-color": "red"},
+    #                         },
+    #                         {
+    #                             "selector": ".collapsed",
+    #                             "style": {"background-color": "orange"},
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_step_1",
+    #                             "style": {"line-color": "green"},
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_step_2",
+    #                             "style": {"line-color": "blue"},
+    #                         },
+    #                         {
+    #                             "selector": ".aggregation_step_3",
+    #                             "style": {"line-color": "red"},
+    #                         },
+    #                     ],
+    #                     elements=elements,
+    #                 )
+    #             ]
+    #         )
+    #     ),
+    # )
+    #
+    # return html.Div(layout)
+
+
+def collapse_expand_callback(app, collapsed_nodes, file):
+    """Creates the callback function for the aggregation graph.
+
+    Parameters
+    ----------
+    app: dash.Dash
+        The dash application.
+    collapsed_nodes: list
+        The list of all collapsed nodes.
+    file: str
+        The path to the Excel file of the Model Structure.
+    """
+
+    @app.callback(
+        Output("cytoscape-tree", "elements", allow_duplicate=True),
+        Input("cytoscape-tree", "selectedNodeData"),
+        Input("aggregation-slider", "value"),
+        Input("aggregation-sector", "value"),
+        State("cytoscape-tree", "elements"),
+        prevent_initial_call=True,
+    )
+    def update_aggregation_graph(nodeData, value, sector, elements):
+        """Collapses or expands the children of the the selected node.
+
+        Parameters
+        ----------
+        nodeData: list
+            The list of all selected nodes.
+        value: int
+            The aggregation level.
+        sector: str
+            The sector of the aggregation graph.
+        elements: list
+            The list of all nodes and edges.
+
+        Returns
+        -------
+        list
+            The updated list of all nodes and edges."""
+
+        level_of_detail = value
+
+        if not nodeData:
+            return elements
+
+        node_id = nodeData[0]["id"]
+
+        if node_id in collapsed_nodes:
+            collapsed_nodes.remove(node_id)
+        else:
+            collapsed_nodes.append(node_id)
+
+        nodes, edges = generate_elements(file, level_of_detail, sector)
+
+        updated_elements = elements_after_collapse(collapsed_nodes, nodes, edges)
+        return updated_elements
+
+
+def detail_level_callback(app, file, collapsed_nodes):
+    """Creates the callback function for the aggregation level slider.
+
+    Parameters
+    ----------
+    app: dash.Dash
+        The dash application.
+    file: str
+        The path to the Excel file of the Model Structure.
+    collapsed_nodes: list
+        The list of all collapsed nodes."""
+
+    @app.callback(
+        [Output("cytoscape-tree", "elements"), Output("aggregation-legnd", "children")],
+        [Input("aggregation-slider", "value"), Input("aggregation-sector", "value")],
+    )
+    def update_detail_level(value, sector):
+        """Updates the detail level of the aggregation graph.
+
+        Parameters
+        ----------
+        value: int
+            The detail level.
+        sector: str
+            The sector of the aggregation graph.
+
+        Returns
+        -------
+        list
+            The filtered list of all nodes and edges.
+        """
+        level_of_detail = value
+
+        # create nodes and edges
+        nodes, edges = generate_elements(file, level_of_detail, sector)
+
+        collapsed_nodes.clear()
+
+        # elements that are to be displayed after collapsing
+        elements = elements_after_collapse(collapsed_nodes, nodes, edges)
+
+        # create legend
+        legend = create_legend(sector)
+
+        return elements, legend

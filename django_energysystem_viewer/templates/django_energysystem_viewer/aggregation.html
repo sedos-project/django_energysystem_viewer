@@ -5,26 +5,29 @@
 {% block content %}
   {{ block.super }}
   <div class="container">
-    <h1>Aggregation Graph</h1>
+    <h3>Aggregation Graph</h3>
     <form id="aggregation_form">
           <input type="hidden" name="structure" value="{{ structure_name }}" />
           <label for="sectors">Choose Sector:</label>
-          <select id="sectors" name="sectors" multiple>
-            <option label="Power" value="pow"></option>
-            <option label="X2X" value="x2x"></option>
-            <option label="Industry" value="ind"></option>
-            <option label="Transport" value="tra"></option>
-            <option label="Heat" value="hea"></option>
-          </select>
-          <label for="lod">Choose the desired level of detail with the slider:</label>
-          <input type="text"
-                 class="js-range-slider"
-                 name="lod"
-                 value=""
-                 data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
-                 data-grid="true" />
+          <input type="radio" id="sectors" name="sectors" value="pow" checked>
+          <label for="sectors">Power</label>
+          <input type="radio" id="sectors" name="sectors" value="x2x">
+          <label for="sectors">X2X</label>
+          <input type="radio" id="sectors" name="sectors" value="hea">
+          <label for="sectors">Heat</label>
+          <input type="radio" id="sectors" name="sectors" value="ind">
+          <label for="sectors">Industry</label>
+          <input type="radio" id="sectors" name="sectors" value="tra">
+          <label for="sectors" style="margin-right: 200px;">Transport</label>
+          <label for="lod">Choose the desired level of detail:</label>
+          <input type="radio" id="lod" name="lod" value=1>
+          <label for="lod">1</label>
+          <input type="radio" id="lod" name="lod" value=2 checked>
+          <label for="lod">2</label>
+          <input type="radio" id="lod" name="lod" value=3>
+          <label for="lod">3</label>
     </form>
-    <div id="aggregation_graph" style="width: auto; height: 800px"></div>
+    <div id="aggregation_graph" style="width: auto; height: 900px"></div>
   </div>
 {% endblock content %}
 
@@ -60,13 +63,17 @@
             var requestUrl = url + "?" + queryString;
 
             fetch(requestUrl)
-                .then(response => {
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log(data);
-                    cy.json({ elements: data["elements"] });
-                    cy.resize();
+                    console.log("Received data:", data);
+                    cy.elements().remove(); // Clear existing elements first
+                    cy.add(data.elements);  // Add new nodes and edges
+                    cy.layout({
+                        name: 'preset',
+                        fit: true
+                    }).run();
+                    cy.fit(); // This will automatically zoom out to fit all elements
+                    cy.resize(); // This ensures the viewport is recalculated in case of container size changes
                 })
                 .catch(error => console.error('Error requesting aggregation data:', error));
         }
