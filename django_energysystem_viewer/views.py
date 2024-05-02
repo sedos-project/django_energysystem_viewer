@@ -85,13 +85,12 @@ class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
     def get_context_data(self, **kwargs):
-        structure_name = self.request.GET.get("structure")
+        structure_name = "SEDOS-structure-all.xlsx"
         return {"structure_name": structure_name}
 
 
 def aggregation_graph(request):
-    structure_name = request.GET.get("structure")
-    file = str(adapter_settings.STRUCTURES_DIR / f"{structure_name}.xlsx")
+    file = str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx")
     sectors = request.GET["sectors"]
     lod = request.GET["lod"]
     elements = ag.generate_aggregation_graph(file, sectors, lod)
