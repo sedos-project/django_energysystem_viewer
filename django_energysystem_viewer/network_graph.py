@@ -2,228 +2,643 @@ import igraph as ig
 import pandas as pd
 import plotly.graph_objects as go
 from django.conf import settings
+from typing import List, Tuple, Union
 
-
-# generate the trace for the selected sector and algorithm
-def generate_trace(updated_process_set, sector, algorithm, seperate_commodities):
-    """Generates the trace for the selected sector and algorithm.
-
-    Parameters
-    ----------
-    sector: str
-        The selected sector, which is used to filter the process set or in the case of aggregated commodities, a string
-        of the selected sectors.
-    algorithm: str
-        The selected algorithm, which is used to generate the layout.
-    seperate_commodities: str
-        The selected option, whether the commodities should be seperated or aggregated.
-    file: str
-        The path to the Excel file of the Model Structure.
-
-    Returns
-    -------
-    list
-        The combined trace of nodes and edges, including their colours and shapes.
+def generate_Graph(
+        updated_process_set: pd.DataFrame,
+        selected_sectors: List[str],
+        algorithm: str,
+        separate_commodities: str,
+        process_specific: str,
+        commodity_specific: str,
+) -> go.Figure:
     """
+    Generate a Plotly graph for the selected sectors and algorithm.
 
-    # filter aggregations as first step
-    # updated_process_set = updated_process_set[~updated_process_set["process"].str.endswith("_ag")]
+    Parameters:
+    updated_process_set (pd.DataFrame): The updated process set from the Excel file.
+    selected_sectors (List[str]): The selected sectors for filtering the process set.
+    algorithm (str): The selected algorithm for generating the layout.
+    separate_commodities (str): Option to separate or aggregate commodities.
+    process_specific (str): The selected process to generate the graph for.
+    commodity_specific (str): The selected commodity to generate the graph for.
 
-    # initialize the lists for the inputs, outputs and processes
-    inputs = []
-    outputs = []
-    processes = []
+    Returns:
+    go.Figure: The generated graph.
+    """
+    axis = dict(
+        showbackground=False,
+        showline=False,
+        zeroline=False,
+        showgrid=False,
+        showticklabels=False,
+        title="",
+        showspikes=False,
+        visible=True,
+    )
 
-    # in the case that the commodities are seperate, the nodes and edges are created for each sector seperately
-    if seperate_commodities == "sep":
-        filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector)]
+    graph_layout = go.Layout(
+        autosize=True,
+        height=800,
+        width=1000,
+        showlegend=True,
+        hovermode="closest",
+        hoverdistance=-1,
+        spikedistance=-1,
+        scene=dict(
+            xaxis=dict(axis),
+            yaxis=dict(axis),
+        ),
+        margin=dict(l=0, r=0, t=0, b=0, autoexpand=True),
+    )
 
-        inputs = filtered_process_set["input"].tolist()
-        outputs = filtered_process_set["output"].tolist()
-        processes = filtered_process_set["process"].tolist()
-    # in the case that the commodities are aggregated, the nodes and edges of the selected sectors are created together
-    elif seperate_commodities == "agg":
-        sector_abbrvs = ["pow", "x2x", "ind", "tra", "hea", "hel"]
-        for sector_abbrv in sector_abbrvs:
-            if sector_abbrv in sector:
-                filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(sector_abbrv)]
+    fig = go.Figure(layout=graph_layout)
 
-                inputs += filtered_process_set["input"].tolist()
-                outputs += filtered_process_set["output"].tolist()
-                processes += filtered_process_set["process"].tolist()
+    if not process_specific and not commodity_specific:
+        if separate_commodities == "sep":
+            for sector in selected_sectors:
+                traces = generate_trace(updated_process_set, sector, algorithm, "sep")
+                fig.add_traces(traces)
+        elif separate_commodities == "agg":
+            for sector in selected_sectors:
+                traces = generate_trace(updated_process_set, sector, algorithm, "agg")
+                fig.add_traces(traces)
+    elif process_specific:
+        traces = generate_trace_process_specific(updated_process_set, process_specific)
+        fig.add_traces(traces)
+    elif commodity_specific:
+        traces = generate_trace_commodity_specific(updated_process_set, commodity_specific, selected_sectors)
+        fig.add_traces(traces)
 
-    nodes = []
-    edges = []
+    fig.update_xaxes(visible=False)
+    fig.update_yaxes(visible=False)
+    predefined_order = ["edges_pow","edges_x2x","edges_hea","edges_ind","edges_tra", "pow", "x2x", "hea", "ind", "tra", "pri", "sec", "exo", "iip", "emi"]
+    fig = update_layout_with_unique_legend(fig, predefined_order)
+    # Update the layout for the legend position
+    fig.update_layout(legend=dict(y=0.5, yanchor="middle")
+    )
 
-    process_list = []
+    return fig
 
-    # create all nodes and then all edges of the format (source_index, target_index)
-    for i, process in enumerate(processes):
-        input_value = inputs[i]
-        output_value = outputs[i]
-        process_value = processes[i]
+def generate_trace(process_set: pd.DataFrame, sector: str, algorithm: str, separate_commodities: str) -> List[
+    go.Scatter]:
+    """
+    Generate Plotly traces for nodes and edges.
 
-        if isinstance(input_value, str):
-            input_list = input_value.split(",")
-        else:
-            input_list = []
+    Parameters:
+    process_set (pd.DataFrame): The updated process set from the Excel file.
+    sector (str): The selected sector for filtering the process set.
+    algorithm (str): The selected algorithm for generating the layout.
+    separate_commodities (str): Option to separate or aggregate commodities.
 
-        # remove brackets from input_list -> brackets cause problems with color assignment
-        input_list = [item.replace("[", "").replace("]", "") for item in input_list]
+    Returns:
+    List[go.Scatter]: Combined trace of nodes and edges including their colors and shapes.
+    """
+    # process_set = process_set[~process_set["process"].str.endswith(("_ag_0","_ag_1"))]
 
-        if isinstance(output_value, str):
-            output_list = output_value.split(",")
-        else:
-            output_list = []
+    inputs, outputs, processes = get_filtered_process_data(process_set, sector)
 
-        # remove brackets from output_list -> brackets cause problems with color assignment
-        output_list = [item.replace("[", "").replace("]", "") for item in output_list]
+    nodes, edges = create_nodes_and_edges(inputs, outputs, processes)
+    G = ig.Graph(edges)
+    layout = generate_layout(G, algorithm)
 
-        if isinstance(process_value, str):
-            process_list = process_value.split(",")
-        else:
-            process_list = []
+    labels, node_colors, node_shapes = get_node_attributes(nodes, processes)
+    x_offset, y_offset = calculate_offset(sector, algorithm) if separate_commodities == "sep" else (0, 0)
 
-        # remove brackets from process_list -> brackets cause problems with color assignment
-        process_list = [item.replace("[", "").replace("]", "") for item in process_list]
+    Xn, Yn = get_node_coordinates(layout, len(nodes), x_offset, y_offset)
+    Xe, Ye = get_edge_coordinates(layout, edges, x_offset, y_offset)
+
+    edge_trace = create_edge_trace(Xe, Ye, sector)
+    node_traces = create_node_traces_by_color(Xn, Yn, labels, node_shapes, node_colors, processes)
+
+    return [edge_trace] + node_traces
+
+def create_node_trace(Xn: List[float], Yn: List[float], labels: List[str], shapes: List[str], colors: List[str], processes: List[str], sizes: List[int] = None, mode: str = "markers") -> go.Scatter:
+    """
+    Create a Plotly trace for nodes.
+
+    Parameters:
+    Xn (List[float]): X coordinates of nodes.
+    Yn (List[float]): Y coordinates of nodes.
+    labels (List[str]): Labels for the nodes.
+    shapes (List[str]): Shapes of the nodes.
+    colors (List[str]): Colors of the nodes.
+    sizes (List[int], optional): Sizes of the nodes. Defaults to None.
+    mode (str, optional): Mode for the trace. Defaults to "markers".
+
+    Returns:
+    go.Scatter: The node trace.
+    """
+    marker_dict = dict(
+        symbol=shapes,
+        size=sizes if sizes else 8,
+        color=colors,
+        line=dict(color="rgb(50,50,50)", width=0.5),
+    )
+
+    return go.Scatter(
+        x=Xn,
+        y=Yn,
+        mode=mode,
+        name="Nodes",
+        marker=marker_dict,
+        text=labels,
+        hoverinfo="text",
+        showlegend=True,
+        legendgroup='Nodes'
+    )
+
+def assign_color(node: str, processes: List[str]) -> str:
+    """
+    Assign a color to each node based on its sector or type.
+
+    Parameters:
+    node (str): The node to assign a color to.
+    processes (List[str]): The list of processes for reference.
+
+    Returns:
+    str: The assigned color of the node.
+    """
+    if node in processes:
+        sector_colors = {
+            "pow": "rgb(255, 255, 0)",  # Yellow
+            "x2x": "rgb(0, 0, 255)",  # Blue
+            "ind": "rgb(255, 0, 255)",  # Magenta
+            "tra": "#17cda6",  # Turquoise
+            "hea": "rgb(255, 0, 0)",  # Red
+            "hel": "rgb(0, 0, 0)",  # Black
+        }
+        sector = node[:3]  # Extract the first three letters of the node name
+        return sector_colors.get(sector, "rgb(128, 128, 128)")  # Default color for other sectors
+    else:
+        source_colors = {
+            "pri": "#FFFFFF",  # White
+            "sec": "#6aa84f",  # Green
+            "exo": "#ED7D31",  # Orange
+            "iip": "#9999CC",  # Violet
+        }
+        source = node[:3]  # Extract the first three letters of the node name
+        return source_colors.get(source, "rgb(128, 128, 128)")  # Default color if not found
+
+
+def assign_shape(node: str, processes: List[str]) -> str:
+    """
+    Assign a shape to each node based on whether it is a process or an input/output.
+
+    Parameters:
+    node (str): The node to assign a shape to.
+    processes (List[str]): The list of processes for reference.
+
+    Returns:
+    str: The assigned shape of the node.
+    """
+    return "square" if node in processes else "circle"
+
+
+def calculate_offset(sector: str, algorithm: str) -> Tuple[int, int]:
+    """
+    Calculate the offset for each sector so that the nodes of different sectors do not overlap.
+
+    Parameters:
+    sector (str): The sector for which nodes the offset is calculated.
+    algorithm (str): The selected algorithm for generating the layout.
+
+    Returns:
+    Tuple[int, int]: The x and y offsets for the sector nodes.
+    """
+    offset_values = {
+        "dav": 200,
+        "drl": 0,
+        "fr": 20,
+        "go": 500,
+        "kk": 15,
+        "lgl": 1500000,
+        "mds": 20,
+        "umap": 20,
+    }
+    offset = offset_values.get(algorithm, 0)
+    sector_offsets = {
+        "x2x": (0, 0),
+        "pow": (offset, offset),
+        "ind": (offset, -offset),
+        "tra": (-offset, offset),
+        "hea": (-offset, -offset),
+    }
+    return sector_offsets.get(sector, (0, 0))
+
+def generate_layout(G: ig.Graph, algorithm: str) -> ig.Layout:
+    """
+    Generate the layout for the graph according to the selected algorithm.
+
+    Parameters:
+    G (ig.Graph): The graph for generating the layout.
+    algorithm (str): The selected algorithm for generating the layout.
+
+    Returns:
+    ig.Layout: The generated layout.
+    """
+    layout_mapping = {
+        "dav": G.layout_davidson_harel,
+        "drl": G.layout_drl,
+        "fr": G.layout_fruchterman_reingold,
+        "go": G.layout_graphopt,
+        "kk": G.layout_kamada_kawai,
+        "lgl": G.layout_lgl,
+        "mds": G.layout_mds,
+        "umap": G.layout_umap,
+    }
+    layout_func = layout_mapping.get(algorithm)
+    return layout_func(dim=2) if layout_func else G.layout_fruchterman_reingold(dim=2)
+
+def get_filtered_process_data(process_set: pd.DataFrame, filter_value: str) -> Tuple[
+    List[str], List[str], List[str]]:
+    """
+    Get filtered process data based on the provided filter type and value.
+
+    Parameters:
+    process_set (pd.DataFrame): The process set DataFrame.
+    filter_value (str): The value to filter by.
+    filter_type (str): The type of filter ('sector', 'process').
+
+    Returns:
+    Tuple[List[str], List[str], List[str]]: Lists of inputs, outputs, and processes.
+    """
+    sector_abbrvs = ["pow", "x2x", "ind", "tra", "hea", "hel"]
+    filtered_set = pd.DataFrame()
+    for sector_abbrv in sector_abbrvs:
+        if sector_abbrv in filter_value:
+            filtered_set = pd.concat(
+                [filtered_set, process_set[process_set["process"].str.startswith(sector_abbrv)]])
+    inputs = filtered_set["input"].tolist()
+    outputs = filtered_set["output"].tolist()
+    processes = filtered_set["process"].tolist()
+
+    return inputs, outputs, processes
+
+
+def create_nodes_and_edges(inputs: List[str], outputs: List[str], processes: List[str]) -> Tuple[
+    List[str], List[Tuple[int, int]]]:
+    """
+    Create nodes and edges from inputs, outputs, and processes.
+
+    Parameters:
+    inputs (List[str]): List of input nodes.
+    outputs (List[str]): List of output nodes.
+    processes (List[str]): List of process nodes.
+
+    Returns:
+    Tuple[List[str], List[Tuple[int, int]]]: Nodes and edges.
+    """
+    nodes, edges = [], []
+
+    for i in range(len(processes)):
+        input_list = inputs[i].split(",") if isinstance(inputs[i], str) else []
+        input_list = [item.strip().replace("[", "").replace("]", "") for item in input_list]
+
+        output_list = outputs[i].split(",") if isinstance(outputs[i], str) else []
+        output_list = [item.strip().replace("[", "").replace("]", "") for item in output_list]
+
+        process_list = processes[i].split(",") if isinstance(processes[i], str) else []
+        process_list = [item.strip().replace("[", "").replace("]", "") for item in process_list]
 
         for input_node in input_list:
-            input_node = input_node.strip()
             if input_node not in nodes:
                 nodes.append(input_node)
-
             source_index = nodes.index(input_node)
 
             for process_node in process_list:
-                process_node = process_node.strip()
                 if process_node not in nodes:
                     nodes.append(process_node)
-
                 target_index = nodes.index(process_node)
-
                 edges.append((source_index, target_index))
 
         for process_node in process_list:
-            process_node = process_node.strip()
             if process_node not in nodes:
                 nodes.append(process_node)
-
             source_index = nodes.index(process_node)
 
             for output_node in output_list:
-                output_node = output_node.strip()
                 if output_node not in nodes:
                     nodes.append(output_node)
-
                 target_index = nodes.index(output_node)
-
                 edges.append((source_index, target_index))
 
-    G = ig.Graph(edges)
+    return nodes, edges
 
-    # create layout with the selected algorithm
-    layt = generate_layout(G, algorithm)
 
-    labels = []
-    node_color = []
-    node_shape = []
+def get_node_attributes(nodes: List[str], processes: List[str]) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Get node attributes including labels, colors, and shapes.
 
-    # assign color and shape to each node
+    Parameters:
+    nodes (List[str]): List of nodes.
+    processes (List[str]): List of processes.
+
+    Returns:
+    Tuple[List[str], List[str], List[str]]: Node labels, colors, and shapes.
+    """
+    labels, node_colors, node_shapes = [], [], []
     for node in nodes:
         labels.append(node)
-        node_color.append(assign_color(node, processes))
-        node_shape.append(assign_shape(node, processes))
+        node_colors.append(assign_color(node, processes))
+        node_shapes.append(assign_shape(node, processes))
+    return labels, node_colors, node_shapes
 
-    # calculate the offset for each sector if the commodities are seperated
-    if seperate_commodities == "sep":
-        x_offset, y_offset = calculate_offset(sector, algorithm)
-    elif seperate_commodities == "agg":
-        x_offset, y_offset = 0, 0
 
-    N = len(nodes)
-    # assign calculated positions to each node
-    Xn = []
-    Yn = []
+def get_process_node_attributes(nodes: List[str], processes: List[str], process_name: str) -> Tuple[
+    List[str], List[str], List[str], List[int]]:
+    """
+    Get process-specific node attributes including labels, colors, shapes, and sizes.
 
-    for k in range(N):
-        Xn += [layt[k][0] + x_offset]
-        Yn += [layt[k][1] + y_offset]
+    Parameters:
+    nodes (List[str]): List of nodes.
+    processes (List[str]): List of processes.
+    process_name (str): The specific process name.
 
-    # assign the calculated coordinates to the edges
-    Xe = []
-    Ye = []
+    Returns:
+    Tuple[List[str], List[str], List[str], List[int]]: Node labels, colors, shapes, and sizes.
+    """
+    labels, node_colors, node_shapes, node_sizes = [], [], [], []
+    for node in nodes:
+        labels.append(node)
+        node_colors.append(assign_color(node, processes))
+        node_shapes.append(assign_shape(node, processes))
+        node_sizes.append(15 if node == process_name else 8)
+    return labels, node_colors, node_shapes, node_sizes
 
+
+def get_node_coordinates(layout: ig.Layout, num_nodes: int, x_offset: int, y_offset: int) -> Tuple[
+    List[float], List[float]]:
+    """
+    Get coordinates for nodes with the given layout and offsets.
+
+    Parameters:
+    layout (ig.Layout): The layout of the nodes.
+    num_nodes (int): The number of nodes.
+    x_offset (int): The x offset for the nodes.
+    y_offset (int): The y offset for the nodes.
+
+    Returns:
+    Tuple[List[float], List[float]]: X and Y coordinates of nodes.
+    """
+    Xn, Yn = [], []
+    for k in range(num_nodes):
+        Xn.append(layout[k][0] + x_offset)
+        Yn.append(layout[k][1] + y_offset)
+    return Xn, Yn
+
+
+def get_edge_coordinates(layout: ig.Layout, edges: List[Tuple[int, int]], x_offset: int, y_offset: int) -> Tuple[
+    List[float], List[float]]:
+    """
+    Get coordinates for edges with the given layout and offsets.
+
+    Parameters:
+    layout (ig.Layout): The layout of the nodes.
+    edges (List[Tuple[int, int]]): The list of edges.
+    x_offset (int): The x offset for the edges.
+    y_offset (int): The y offset for the edges.
+
+    Returns:
+    Tuple[List[float], List[float]]: X and Y coordinates of edges.
+    """
+    Xe, Ye = [], []
     for e in edges:
-        Xe += [layt[e[0]][0] + x_offset, layt[e[1]][0] + x_offset, None]
-        Ye += [layt[e[0]][1] + y_offset, layt[e[1]][1] + y_offset, None]
+        Xe += [layout[e[0]][0] + x_offset, layout[e[1]][0] + x_offset, None]
+        Ye += [layout[e[0]][1] + y_offset, layout[e[1]][1] + y_offset, None]
+    return Xe, Ye
 
-    edge_trace = go.Scatter(
+
+def get_edge_coordinates_from_nodes(Xn: List[float], Yn: List[float], edges: List[Tuple[int, int]]) -> Tuple[
+    List[float], List[float]]:
+    """
+    Get coordinates for edges using node coordinates.
+
+    Parameters:
+    Xn (List[float]): X coordinates of nodes.
+    Yn (List[float]): Y coordinates of nodes.
+    edges (List[Tuple[int, int]]): The list of edges.
+
+    Returns:
+    Tuple[List[float], List[float]]: X and Y coordinates of edges.
+    """
+    Xe, Ye = [], []
+    for e in edges:
+        Xe += [Xn[e[0]], Xn[e[1]], None]
+        Ye += [Yn[e[0]], Yn[e[1]], None]
+    return Xe, Ye
+
+
+def create_edge_trace(Xe: List[float], Ye: List[float], sector: str) -> go.Scatter:
+    """
+    Create a Plotly trace for edges.
+
+    Parameters:
+    Xe (List[float]): X coordinates of edges.
+    Ye (List[float]): Y coordinates of edges.
+    sector (str): The sector to which the edges belong.
+
+    Returns:
+    go.Scatter: The edge trace.
+    """
+    return go.Scatter(
         x=Xe,
         y=Ye,
-        mode="lines+markers",
+        mode="lines",
         line=dict(color="rgb(125,125,125)", width=1),
         hoverinfo="none",
+        showlegend=True,
+        name=f'edges_{sector}'
     )
 
-    # # Create arrowhead traces
-    # arrowhead_traces = []
-    # for i in range(len(Xe)):
-    #     arrowhead_trace = go.Scatter(
-    #         x=[Xe[i]],
-    #         y=[Ye[i]],
-    #         mode="markers",
-    #         marker=dict(size=10, symbol="arrow-up-open"),
-    #         hoverinfo="none",
-    #     )
-    #     arrowhead_traces.append(arrowhead_trace)
 
-    node_trace = go.Scatter(
-        x=Xn,
-        y=Yn,
-        mode="markers",
-        name="actors",
-        marker=dict(
-            symbol=node_shape,
-            size=8,
-            color=node_color,
-            line=dict(color="rgb(50,50,50)", width=0.5),
-        ),
-        text=labels,
-        hoverinfo="text",
-    )
+def create_node_traces_by_color(Xn: List[float], Yn: List[float], labels: List[str], shapes: List[str],
+                                colors: List[str], processes: List[str], sizes: List[int] = None,
+                                mode: str = "markers") -> List[go.Scatter]:
+    """
+    Create Plotly traces for nodes, differentiating by color.
 
-    data = [edge_trace, node_trace]
+    Parameters:
+    Xn (List[float]): X coordinates of nodes.
+    Yn (List[float]): Y coordinates of nodes.
+    labels (List[str]): Labels for the nodes.
+    shapes (List[str]): Shapes of the nodes.
+    colors (List[str]): Colors of the nodes.
+    processes (List[str]): List of processes.
+    sizes (List[int], optional): Sizes of the nodes. Defaults to None.
+    mode (str, optional): Mode for the trace. Defaults to "markers".
 
-    return data
+    Returns:
+    List[go.Scatter]: List of node traces.
+    """
+    unique_colors = list(set(colors))
+    node_traces = []
+    legend_added = set()
+
+    for color in unique_colors:
+        indices = [i for i, c in enumerate(colors) if c == color]
+        trace_Xn = [Xn[i] for i in indices]
+        trace_Yn = [Yn[i] for i in indices]
+        trace_labels = [labels[i] for i in indices]
+        trace_shapes = [shapes[i] for i in indices]
+        trace_sizes = [sizes[i] if sizes else 8 for i in indices]
+
+        legend_name = trace_labels[0][:3]
+        legend_entry = (legend_name, color)
+
+        if legend_entry not in legend_added:
+            show_legend = True
+            legend_added.add(legend_entry)
+        else:
+            show_legend = False
+
+        node_trace = go.Scatter(
+            x=trace_Xn,
+            y=trace_Yn,
+            mode=mode,
+            name=legend_name,
+            marker=dict(
+                symbol=trace_shapes,
+                size=trace_sizes,
+                color=color,
+                line=dict(color="rgb(50,50,50)", width=0.5),
+            ),
+            text=trace_labels,
+            hoverinfo="text",
+            showlegend=show_legend,
+            legendgroup=legend_name
+        )
+        node_traces.append(node_trace)
+
+    return node_traces
 
 
-def generate_trace_process_specific(process_name):
-    """Generates the trace for the selected process.
+def update_layout_with_unique_legend(fig: go.Figure, predefined_order: List[str]) -> go.Figure:
+    """
+    Update the layout of the Plotly figure to ensure unique legend entries and reorder them.
+
+    Parameters:
+    fig (go.Figure): The Plotly figure.
+    predefined_order (List[str]): The predefined order of legend names.
+
+    Returns:
+    go.Figure: The updated Plotly figure with unique and ordered legend entries.
+    """
+    legend_added = set()
+    ordered_traces = []
+
+    # Create a dictionary to sort traces based on predefined order
+    trace_dict = {name: [] for name in predefined_order}
+
+    # Populate the trace dictionary
+    for trace in fig.data:
+        if trace.name in trace_dict:
+            trace_dict[trace.name].append(trace)
+        else:
+            trace_dict.setdefault(trace.name, []).append(trace)
+
+    # Add traces to ordered_traces based on predefined order
+    for name in predefined_order:
+        for trace in trace_dict.get(name, []):
+            legend_entry = (trace.name, trace.marker.color)
+            if legend_entry not in legend_added:
+                trace.showlegend = True
+                legend_added.add(legend_entry)
+            else:
+                trace.showlegend = False
+            ordered_traces.append(trace)
+
+    # Add remaining traces not in predefined order
+    for name, traces in trace_dict.items():
+        if name not in predefined_order:
+            for trace in traces:
+                legend_entry = (trace.name, trace.marker.color)
+                if legend_entry not in legend_added:
+                    trace.showlegend = True
+                    legend_added.add(legend_entry)
+                else:
+                    trace.showlegend = False
+                ordered_traces.append(trace)
+
+    # Clear existing traces and add ordered traces
+    fig.data = []
+    for trace in ordered_traces:
+        fig.add_trace(trace)
+
+    return fig
+
+
+
+def get_process_node_coordinates(num_inputs: int, num_outputs: int) -> Tuple[List[float], List[float]]:
+    """
+    Get coordinates for process-specific nodes.
+
+    Parameters:
+    num_inputs (int): The number of input nodes.
+    num_outputs (int): The number of output nodes.
+
+    Returns:
+    Tuple[List[float], List[float]]: X and Y coordinates of process-specific nodes.
+    """
+    Xn, Yn = [], []
+
+    for i in range(num_inputs):
+        Xn.append(-1)
+        Yn.append(i + 0.5 - num_inputs / 2)
+    Xn.append(0)
+    Yn.append(0)
+    for i in range(num_outputs):
+        Xn.append(1)
+        Yn.append(i + 0.5 - num_outputs / 2)
+    return Xn, Yn
+
+
+def get_commodity_node_coordinates(num_inputs: int, num_outputs: int) -> Tuple[List[float], List[float]]:
+    """
+    Get coordinates for commodity-specific nodes.
+
+    Parameters:
+    num_inputs (int): The number of input nodes.
+    num_outputs (int): The number of output nodes.
+
+    Returns:
+    Tuple[List[float], List[float]]: X and Y coordinates of commodity-specific nodes.
+    """
+    Xn, Yn = [0], [0]
+    j, k = 0, 0
+
+    for i in range(num_inputs):
+        Xn.append(-1)
+        Yn.append(j + 0.5 - num_inputs / 2)
+        j += 1
+
+    for i in range(num_outputs):
+        Xn.append(1)
+        Yn.append(k + 0.5 - num_outputs / 2)
+        k += 1
+
+    return Xn, Yn
+
+def generate_trace_process_specific(updated_process_set, process_name):
+    """
+    Generates the trace for the selected process.
 
     Parameters
     ----------
     process_name: str
         The selected process, which is used to filter the process set.
-    file: str
-        The path to the Excel file of the Model Structure.
+    updated_process_set: pd.DataFrame
+        The DataFrame containing the process set.
 
     Returns
     -------
     list
-        The combined trace of nodes and edges, including their colours and shapes."""
-
-    # load the process set, change the path if necessary
-    updated_process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-
-    # initialize the lists for the inputs, outputs and processes
-    inputs = []
-    outputs = []
-    processes = []
-
-    # filter the process set for the selected process such that only the selected process and its inputs and outputs
-    # are included
+        The combined trace of nodes and edges, including their colors and shapes.
+    """
+    # Filter the process set for the selected process
     filtered_process_set = updated_process_set[updated_process_set["process"].str.startswith(process_name)]
 
+    # Initialize the lists for the inputs, outputs, and processes
     inputs = filtered_process_set["input"].tolist()
     outputs = filtered_process_set["output"].tolist()
     processes = filtered_process_set["process"].tolist()
@@ -231,147 +646,104 @@ def generate_trace_process_specific(process_name):
     nodes = []
     edges = []
 
-    process_list = []
-
-    # create all nodes and then all edges of the format (source_index, target_index)
+    # Create all nodes and then all edges of the format (source_index, target_index)
     for i, process in enumerate(processes):
         input_value = inputs[i]
         output_value = outputs[i]
         process_value = processes[i]
 
-        if isinstance(input_value, str):
-            input_list = input_value.split(",")
-        else:
-            input_list = []
+        # Parse input, output, and process values correctly
+        input_list = input_value.split(",") if isinstance(input_value, str) else input_value
+        input_list = [item.strip().replace("[", "").replace("]", "") for item in input_list]
 
-        # remove brackets from input_list -> brackets cause problems with color assignment
-        input_list = [item.replace("[", "").replace("]", "") for item in input_list]
+        output_list = output_value.split(",") if isinstance(output_value, str) else output_value
+        output_list = [item.strip().replace("[", "").replace("]", "") for item in output_list]
 
-        if isinstance(output_value, str):
-            output_list = output_value.split(",")
-        else:
-            output_list = []
-
-        # remove brackets from output_list -> brackets cause problems with color assignment
-        output_list = [item.replace("[", "").replace("]", "") for item in output_list]
-
-        if isinstance(process_value, str):
-            process_list = process_value.split(",")
-        else:
-            process_list = []
-
-        # remove brackets from process_list -> brackets cause problems with color assignment
-        process_list = [item.replace("[", "").replace("]", "") for item in process_list]
+        process_list = process_value.split(",") if isinstance(process_value, str) else process_value
+        process_list = [item.strip().replace("[", "").replace("]", "") for item in process_list]
 
         nodes.append(process_name)
 
-        # right now, only single process names can be searched for, not multiple, so the for loop is not necessary but
-        # kept for future use
         for input_node in input_list:
             input_node = input_node.strip()
             if input_node not in nodes:
                 nodes.append(input_node)
-
             source_index = nodes.index(input_node)
 
             for process_node in process_list:
                 process_node = process_node.strip()
                 if process_node not in nodes:
                     nodes.append(process_node)
-
                 target_index = nodes.index(process_node)
-
                 edges.append((source_index, target_index))
 
         for process_node in process_list:
             process_node = process_node.strip()
             if process_node not in nodes:
                 nodes.append(process_node)
-
             source_index = nodes.index(process_node)
 
             for output_node in output_list:
                 output_node = output_node.strip()
                 if output_node not in nodes:
                     nodes.append(output_node)
-
                 target_index = nodes.index(output_node)
-
                 edges.append((source_index, target_index))
 
-        # initialize the lists for the labels, colors and shapes of the nodes
-        node_color = []
-        node_shape = []
-        node_size = []
+    # Initialize the lists for the labels, colors, and shapes of the nodes
+    node_colors = [assign_color(node, process_list) for node in nodes]
+    node_shapes = [assign_shape(node, process_list) for node in nodes]
+    node_sizes = [15 if node in process_list else 8 for node in nodes]
 
-        for node in nodes:
-            node_color.append(assign_color(node, process_list))
-            node_shape.append(assign_shape(node, process_list))
-            if node in process_list:
-                node_size.append(15)
-            else:
-                node_size.append(8)
+    # The process node should be displayed in the center, the inputs on the left, and the outputs on the right
+    Xn = [0]  # Center node x-coordinate
+    Yn = [0]  # Center node y-coordinate
 
-        # the process node should be displayed in the center, the inputs on the left, and the outputs on the right
-        # the appropriate coordinates have to be assigned to each node
-        # the y-coordinates of the inputs and outputs should be that they are evenly distributed around 0, which is the
-        # y-coordinate of the process node
+    # Add coordinates for the input nodes
+    for i in range(len(input_list)):
+        Xn.append(-1)
+        Yn.append(i + 0.5 - len(input_list) / 2)
 
-        Xn = []
-        Yn = []
+    # Add coordinates for the output nodes
+    for i in range(len(output_list)):
+        Xn.append(1)
+        Yn.append(i + 0.5 - len(output_list) / 2)
 
-        # add coordinates of the process node
-        Xn += [0]
-        Yn += [0]
+    # Assign the calculated coordinates to the edges
+    Xe, Ye = [], []
+    for e in edges:
+        Xe += [Xn[e[0]], Xn[e[1]], None]
+        Ye += [Yn[e[0]], Yn[e[1]], None]
 
-        # add coordinates of the inputs
-        for i in range(len(input_list)):
-            Xn += [-1]
-            Yn += [i + 0.5 - len(input_list) / 2]
+    # Create the edge trace
+    edge_trace = go.Scatter(
+        x=Xe,
+        y=Ye,
+        mode="lines",
+        line=dict(color="rgb(125,125,125)", width=1),
+        hoverinfo="none",
+    )
 
-        # add coordinates of the outputs
-        for i in range(len(output_list)):
-            Xn += [1]
-            Yn += [i + 0.5 - len(output_list) / 2]
+    # Create the node trace
+    node_trace = go.Scatter(
+        x=Xn,
+        y=Yn,
+        mode="markers+text",
+        name="actors",
+        marker=dict(
+            symbol=node_shapes,
+            size=node_sizes,
+            color=node_colors,
+            line=dict(color="rgb(50,50,50)", width=0.5),
+        ),
+        text=nodes,
+        textposition="bottom center",
+        hoverinfo="text",
+    )
 
-        # assign the calculated coordinates to the edges
-        Xe = []
-        Ye = []
+    return [edge_trace, node_trace]
 
-        for e in edges:
-            Xe += [Xn[e[0]], Xn[e[1]], None]
-            Ye += [Yn[e[0]], Yn[e[1]], None]
-
-        edge_trace = go.Scatter(
-            x=Xe,
-            y=Ye,
-            mode="lines",
-            line=dict(color="rgb(125,125,125)", width=1),
-            hoverinfo="none",
-        )
-
-        node_trace = go.Scatter(
-            x=Xn,
-            y=Yn,
-            mode="markers+text",
-            name="actors",
-            marker=dict(
-                symbol=node_shape,
-                size=node_size,
-                color=node_color,
-                line=dict(color="rgb(50,50,50)", width=0.5),
-            ),
-            text=nodes,
-            textposition="bottom center",
-            hoverinfo="text",
-        )
-
-        data = [edge_trace, node_trace]
-
-        return data
-
-
-def generate_trace_commodity_specific(commodity_name, selected_sectors):
+def generate_trace_commodity_specific(updated_process_set, commodity_name, selected_sectors):
     """
     Generates the trace for the selected commodity. All processes that produce the selected commodity are displayed to
     the left of the commodity, all processes that consume the selected commodity are displayed to the right of the
@@ -391,16 +763,8 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
     list
         The combined trace of nodes and edges, including their colours and shapes."""
 
-    # load the process set, change the path if necessary
-    process_set = pd.read_excel(settings.MEDIA_ROOT + "/" + settings.MODEL_STRUCTURE_FILE, "Process_Set")
-
-    # initialize the lists for the inputs, outputs and processes
-    inputs = []
-    outputs = []
-    processes = []
-
     # filter process set for the selected sectors
-    updated_process_set = process_set[process_set["process"].str.startswith(tuple(selected_sectors))]
+    updated_process_set = updated_process_set[updated_process_set["process"].str.startswith(tuple(selected_sectors))]
 
     # filter the process set to only include processes that produce or consume the selected commodity
     filtered_process_set = updated_process_set[
@@ -507,257 +871,3 @@ def generate_trace_commodity_specific(commodity_name, selected_sectors):
     data = [edge_trace, node_trace]
 
     return data
-
-
-def assign_color(node, processes):
-    """Assigns a color to each node, depending on their sector.
-
-    For processes, the colors chosen are red for power, green for x2x, blue for industry, yellow for transport, magenta
-    for heat. For inputs and outputs, the colors chosen are dark red for primary, red for secondary, orange for
-    exogenous, light orange for intermediate.
-
-    Parameters
-    ----------
-    node: str
-        The node to assign a color to.
-
-    Returns
-    -------
-    str
-        The assigned color of the node.
-    """
-
-    if node in processes:
-        sector_colors = {
-            "pow": "rgb(255, 255, 0)",  # Yellow
-            "x2x": "rgb(0, 0, 255)",  # Blue
-            "ind": "rgb(255, 0, 255)",  # Magenta
-            "tra": "#17cda6",  # Turquoise
-            "hea": "rgb(255, 0, 0)",  # Red
-            "hel": "rgb(0, 0, 0)",  # black
-        }
-
-        sector = node[:3]  # Extract the first three letters of the node name
-
-        if sector in sector_colors:
-            color = sector_colors[sector]
-        else:
-            color = "rgb(128, 128, 128)"  # Default color for other sectors
-
-        return color
-
-    if node not in processes:
-        source_colors = {
-            "pri": "#FFFFFF",  # white
-            "sec": "#6aa84f",  # Green
-            "exo": "#ED7D31",  # Orange
-            "iip": "#9999CC",  # Violett
-        }
-
-        source = node[:3]  # Extract the first three letters of the node name
-
-        if source in source_colors:
-            color = source_colors[source]
-        else:
-            color = "rgb(128, 128, 128)"
-
-        return color
-
-
-def assign_shape(node, processes):
-    """Assigns a shape to each node, depending on whether it is a process or an input/output.
-
-    Parameters
-    ----------
-    node: str
-        The node to assign a shape to.
-
-    Returns
-    -------
-    str
-        The assigned shape of the node.
-    """
-
-    if node in processes:
-        shape = "square"
-    else:
-        shape = "circle"
-
-    return shape
-
-
-def calculate_offset(sector, algorithm):
-    """Calculates the offset for each sector, so that the nodes of the different sectors are not overlapping.
-
-    Parameters
-    ----------
-    sector: str
-        The sector, for which nodes the offset is calculated.
-
-    Returns
-    -------
-    int
-        The x offset of the nodes of the sector.
-    int
-        The y offset of the nodes of the sector.
-    """
-
-    if algorithm == "dav":
-        offset = 200
-    elif algorithm == "drl":
-        offset = 0
-    elif algorithm == "fr":
-        offset = 20
-    elif algorithm == "go":
-        offset = 500
-    elif algorithm == "kk":
-        offset = 15
-    elif algorithm == "lgl":
-        offset = 1500000
-    elif algorithm == "mds":
-        offset = 20
-    elif algorithm == "umap":
-        offset = 20
-    else:
-        offset = 0
-
-    sector_offsets = {
-        "x2x": [0, 0],
-        "pow": [offset, offset],
-        "ind": [offset, -offset],
-        "tra": [-offset, offset],
-        "hea": [-offset, -offset],
-    }
-
-    if sector in sector_offsets:
-        x_offset = sector_offsets[sector][0]
-        y_offset = sector_offsets[sector][1]
-    else:
-        x_offset = 0
-        y_offset = 0
-
-    return x_offset, y_offset
-
-
-# generate the graph
-def generate_Graph(
-    updated_process_set,
-    selected_sectors,
-    algorithm,
-    seperate_commodities,
-    process_specific,
-    commodity_specific,
-):
-    """Generates the graph for the selected sectors and algorithm.
-
-    Parameters
-    ----------
-    selected_sectors: list
-        The selected sectors, which are used to filter the process set.
-    algorithm: str
-        The selected algorithm, which is used to generate the layout.
-    seperate_commodities: str
-        The selected option, whether the commodities should be seperated or aggregated.
-    process_specific: str
-        The selected process, which is used to generate the graph, in the case a specific process is searched for.
-    commodity_specific: str
-        The selected comodity, which is used to generate the graph, in the case a specific comodity is searched for.
-    file: str
-        The path to the Excel file of the Model Structure.
-
-    Returns
-    -------
-    plotly.graph_objects.Figure
-        The generated graph.
-    """
-    axis = dict(
-        showbackground=False,
-        showline=False,
-        zeroline=False,
-        showgrid=False,
-        showticklabels=False,
-        title="",
-        showspikes=False,
-        visible=False,
-    )
-
-    graph_layout = go.Layout(
-        autosize=True,
-        height=650,
-        showlegend=False,
-        hovermode="closest",
-        hoverdistance=-1,
-        spikedistance=-1,
-        scene=dict(
-            xaxis=dict(axis),
-            yaxis=dict(axis),
-        ),
-        margin=dict(l=0, r=0, t=0, b=0, autoexpand=False),
-    )
-
-    fig = go.Figure(layout=graph_layout)
-
-    if not process_specific and not commodity_specific:
-        # add traces for each selected sector and depending on whether the commodities are seperated or aggregated
-        if seperate_commodities == "sep":
-            for sector in selected_sectors:
-                traces = generate_trace(updated_process_set, sector, algorithm, "sep")
-                fig.add_trace(traces[0])
-                fig.add_trace(traces[1])
-        elif seperate_commodities == "agg":
-            # if commodities are aggregated, the selected sectors are combined to one string to use them in the
-            # generate_trace function
-            traces = generate_trace(updated_process_set, "".join(selected_sectors), algorithm, "agg")
-            fig.add_trace(traces[0])
-            fig.add_trace(traces[1])
-
-    elif process_specific:
-        traces = generate_trace_process_specific(process_specific)
-        fig.add_trace(traces[0])
-        fig.add_trace(traces[1])
-
-    elif commodity_specific:
-        traces = generate_trace_commodity_specific(commodity_specific, selected_sectors)
-        fig.add_trace(traces[0])
-        fig.add_trace(traces[1])
-
-    # remove axis scales
-    fig.update_xaxes(visible=False)
-    fig.update_yaxes(visible=False)
-
-    return fig
-
-
-def generate_layout(G, algorithm):
-    """Generates the layout for the graph according to the selected algorithm.
-
-    Parameters
-    ----------
-    G: igraph.Graph
-        The graph, which is used to generate the layout.
-    algorithm: str
-        The selected algorithm.
-
-    Returns
-    -------
-    list
-        The generated layout.
-    """
-    if algorithm == "dav":
-        layout = G.layout_davidson_harel()
-    elif algorithm == "drl":
-        layout = G.layout_drl(dim=2)
-    elif algorithm == "fr":
-        layout = G.layout_fruchterman_reingold(dim=2)
-    elif algorithm == "go":
-        layout = G.layout_graphopt()
-    elif algorithm == "kk":
-        layout = G.layout_kamada_kawai(dim=2)
-    elif algorithm == "lgl":
-        layout = G.layout_lgl()
-    elif algorithm == "mds":
-        layout = G.layout_mds()
-    elif algorithm == "umap":
-        layout = G.layout_umap()
-
-    return layout

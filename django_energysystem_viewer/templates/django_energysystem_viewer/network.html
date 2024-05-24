@@ -1,12 +1,11 @@
 {% extends "django_energysystem_viewer/base.html" %}
-
 {% load static compress %}
 
 {% block content %}
   {{ block.super }}
   <div class="container">
     <div class="row">
-      <div class="col-2">
+      <div class="col-md-2">
         <!-- Network Graph Forms -->
         <div class="row">
           <h3>Network Graph</h3>
@@ -18,7 +17,8 @@
             <select id="mapping" name="mapping">
               <option label="fr" value="fr" selected></option>
               <option label="drl" value="drl"></option>
-              <option label="dav" value="dav"></option>
+              <option label="kk" value="kk"></option>
+              <option label="go" value="go"></option>
             </select>
             <br>
             <label for="sectors">Sectors:</label>
@@ -30,13 +30,13 @@
               <option label="Heat" value="hea"></option>
               <option label="Helper" value="hel"></option>
             </select>
-            <label for="seperate_join">Sectors seperate or joined:</label>
+            <label for="seperate_join">Sectors separate or joined:</label>
             <br>
             <input type="radio" id="joined" name="seperate_join" value="agg" checked>
             <label for="joined">Aggregate Sectors</label>
             <br>
             <input type="radio" id="seperate" name="seperate_join" value="sep">
-            <label for="seperate">Seperate Sectors</label>
+            <label for="seperate">Separate Sectors</label>
             <br>
             <div>You can choose to filter a specific process or a specific commodity.</div>
             <div id="proc_comm"
@@ -61,88 +61,17 @@
           </form>
         </div>
       </div>
-      <div class="col-8">
-        <!-- Network Graph Output -->
-        <div id="network_graph">{{ network_graph|safe }}</div>
+      <div class="col-md-8">
+        <div id="network_graph" style="min-height: 500px;">
+          <!-- Network Graph Will Be Loaded Here -->
+        </div>
       </div>
-      <div class="col-2">
-        <!-- Legend -->
-        <div class="row">
-          <h3>LEGEND:</h3>
-        </div>
-        <div class="row">
-          <h5>Processes:</h5>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-danger border border-secondary"></div>
-            <span>Heating</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-warning border border-secondary"></div>
-            <span>Power</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-success border border-secondary"></div>
-            <span>Transport</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-primary border border-secondary"></div>
-            <span>Industry</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-info border border-secondary"></div>
-            <span>X2X</span>
-          </div>
-        </div>
-        <div class="row">
-          <h5>Commodities:</h5>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-light border border-secondary"></div>
-            <span>Primary</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-success-subtle border border-secondary"></div>
-            <span>Secondary</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-danger-subtle border border-secondary"></div>
-            <span>Exogenous</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-primary-subtle border border-secondary"></div>
-            <span>Industrial</span>
-          </div>
-        </div>
-        <div class="row">
-          <div>
-            <div class="badge bg-dark-subtle border border-secondary"></div>
-            <span>Other</span>
-          </div>
-        </div>
       </div>
     </div>
   </div>
 {% endblock content %}
 
 {% block javascript %}
-  {{ block.super }}
   <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
   <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 {% endblock javascript %}
