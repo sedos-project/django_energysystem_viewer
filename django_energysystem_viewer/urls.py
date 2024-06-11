@@ -12,6 +12,7 @@ urlpatterns = [
     path("energysystem/abbreviation/", views.abbreviations, name="abbreviations"),
     path("energysystem/abbreviation_meaning/", views.abbreviation_meaning),
     path("energysystem/aggregation/", views.AggregationView.as_view(), name="aggregations"),
+    path("energysystem/aggregation_graph/", views.aggregation_graph),
     path("energysystem/processes/", views.ProcessesView.as_view(), name="processes"),
     path(
         "energysystem/process/<str:process_name>/data/",

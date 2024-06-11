@@ -1,10 +1,11 @@
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
+from django_energysystem_viewer import aggregation_graph as ag
 from django_energysystem_viewer import network_graph as ng
 
 
@@ -58,6 +59,7 @@ def network(request):
         request,
         "django_energysystem_viewer/network.html",
         {
+            "network_graph": ng.generate_Graph(process_set, ["pow", "x2x"], "fr", "agg", None, None).to_html(),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -66,14 +68,33 @@ def network(request):
 
 
 def network_graph(request):
+    # # load the process set, change the path if necessary
     structure_name = request.GET.get("structure")
+    # structure_name = 'SEDOS_Stahlindustrie' #'SEDOS_Modellstruktur'
+    updated_process_set = get_excel_data(structure_name, "Process_Set")
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
-    process_set = get_excel_data(structure_name, "Process_Set")
-    return HttpResponse(ng.generate_Graph(process_set, sectors, mapping, sep_agg, process, commodity).to_html())
+    return HttpResponse(
+        ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html()
+    )
+
+class AggregationView(TemplateView):
+    template_name = "django_energysystem_viewer/aggregation.html"
+
+    def get_context_data(self, **kwargs):
+        structure_name = "SEDOS-structure-all.xlsx"
+        return {"structure_name": structure_name}
+
+
+def aggregation_graph(request):
+    file = str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx")
+    sectors = request.GET["sectors"]
+    lod = request.GET["lod"]
+    elements = ag.generate_aggregation_graph(file, sectors, lod)
+    return JsonResponse({"elements": elements}, safe=False)
 
 
 def abbreviations(request):
@@ -99,14 +120,6 @@ def abbreviation_meaning(request):
             return HttpResponse(["Abbreviation not found"])
     else:
         return HttpResponse("")
-
-
-class AggregationView(TemplateView):
-    template_name = "django_energysystem_viewer/aggregation.html"
-
-    def get_context_data(self, **kwargs):
-        structure_name = self.request.GET.get("structure")
-        return {"structure_name": structure_name}
 
 
 class ProcessDetailMixin:

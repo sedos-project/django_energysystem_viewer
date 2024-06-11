@@ -5,36 +5,78 @@
 {% block content %}
   {{ block.super }}
   <div class="container">
-    <h1>Aggregation Graph</h1>
-    <form hx-get="/energysystem/aggregation_graph"
-          hx-target="#aggregation_graph"
-          hx-trigger="change">
-      <label for="sectors">Choose Sector:</label>
-      <select id="sectors" name="sectors" multiple>
-        <option label="Power" value="pow"></option>
-        <option label="X2X" value="x2x"></option>
-        <option label="Industry" value="ind"></option>
-        <option label="Mobility" value="mob"></option>
-        <option label="Heat" value="hea"></option>
-      </select>
-      <label for="lod">Choose the desired level of detail with the slider:</label>
-      <input type="text"
-             class="js-range-slider"
-             name="lod"
-             value=""
-             data-values="['sectors', 'first level of detail', 'second level of detail', 'third level of detail']"
-             data-grid="true" />
+    <h3>Aggregation Graph</h3>
+    <form id="aggregation_form">
+          <input type="hidden" name="structure" value="{{ structure_name }}" />
+          <label for="sectors">Choose Sector:</label>
+          <input type="radio" id="sectors" name="sectors" value="pow" checked>
+          <label for="sectors">Power</label>
+          <input type="radio" id="sectors" name="sectors" value="x2x">
+          <label for="sectors">X2X</label>
+          <input type="radio" id="sectors" name="sectors" value="hea">
+          <label for="sectors">Heat</label>
+          <input type="radio" id="sectors" name="sectors" value="ind">
+          <label for="sectors">Industry</label>
+          <input type="radio" id="sectors" name="sectors" value="tra">
+          <label for="sectors" style="margin-right: 200px;">Transport</label>
+          <label for="lod">Choose the desired level of detail:</label>
+          <input type="radio" id="lod" name="lod" value=1>
+          <label for="lod">1</label>
+          <input type="radio" id="lod" name="lod" value=2 checked>
+          <label for="lod">2</label>
+          <input type="radio" id="lod" name="lod" value=3>
+          <label for="lod">3</label>
     </form>
-    <div id="aggregation_graph"></div>
+    <div id="aggregation_graph" style="width: auto; height: 900px"></div>
   </div>
 {% endblock content %}
 
 {% block javascript %}
-  <!-- Initialize the RangeSlider -->
+  <script src="{% static 'vendors/cytoscape/js/cytoscape.min.js' %}"></script>
   <script>
-    $(document).ready(function() {
-        $(".js-range-slider").ionRangeSlider();
+    document.addEventListener("DOMContentLoaded", function() {
+        const cy = cytoscape({
+            container: document.getElementById('aggregation_graph'),
+            style: [
+              { selector: 'node', style: {'label': 'data(id)', 'font-size': '100', 'width': '75', 'height': '75'} },
+              { selector: '.aggregation_level_1', style: {'background-color': 'green'} },
+              { selector: '.aggregation_level_2', style: {'background-color': 'blue'} },
+              { selector: '.aggregation_level_3', style: {'background-color': 'red'} },
+              { selector: '.collapsed', style: {'background-color': 'orange'} },
+              { selector: '.aggregation_step_1', style: {'line-color': 'green'} },
+              { selector: '.aggregation_step_2', style: {'line-color': 'blue'} },
+              { selector: '.aggregation_step_3', style: {'line-color': 'red'} },
+            ],
+            elements: []
+        });
+
+        const aggregation_form = document.getElementById("aggregation_form");
+        aggregation_form.addEventListener("change", updateAggregationGraph);
+
+        function updateAggregationGraph() {
+            console.log("Get aggregation data")
+            const formData = new FormData(aggregation_form);
+            const url = "/energysystem/aggregation_graph";
+
+            // Append form data to URL
+            const queryString = new URLSearchParams(formData).toString();
+            var requestUrl = url + "?" + queryString;
+
+            fetch(requestUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received data:", data);
+                    cy.elements().remove(); // Clear existing elements first
+                    cy.add(data.elements);  // Add new nodes and edges
+                    cy.layout({
+                        name: 'preset',
+                        fit: true
+                    }).run();
+                    cy.fit(); // This will automatically zoom out to fit all elements
+                    cy.resize(); // This ensures the viewport is recalculated in case of container size changes
+                })
+                .catch(error => console.error('Error requesting aggregation data:', error));
+        }
     });
   </script>
-  <script src="{% static 'django_energysystem_viewer/libs/htmx.min.js' %}"></script>
 {% endblock javascript %}
