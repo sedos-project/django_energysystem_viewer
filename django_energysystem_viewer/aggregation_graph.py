@@ -1,7 +1,8 @@
 from openpyxl import load_workbook
+import pandas as pd
 
 
-def generate_aggregation_graph(file, sectors, lod):
+def generate_aggregation_graph(file, sectors, lod, process_list):
     """Generates the aggregation graph as a dash component using the functions below.
 
     Parameters
@@ -19,17 +20,16 @@ def generate_aggregation_graph(file, sectors, lod):
         The aggregation graph elements (nodes and edges).
     """
     collapsed_nodes = []
-    level_of_detail = int(lod)
     sector = sectors
 
-    nodes, edges = generate_elements(file, level_of_detail, sector)
+    nodes, edges = generate_elements(file, lod, sector, process_list)
     elements = elements_after_collapse(collapsed_nodes, nodes, edges)
 
     return elements
 
 
 def get_aggregation_level(target_value, sheet):
-    """Returns a list of all processes of one aggregation level according to the background color of the corresponding cell.
+    """Returns a list of all processes of one aggregation level.
 
     Parameters
     ----------
@@ -53,7 +53,6 @@ def get_aggregation_level(target_value, sheet):
                     elements.append(cell.value)
 
     return list(dict.fromkeys(elements))
-
 
 def calc_pos(node, aggregation_levels, level_of_detail):
     """Assigns the position of a node according to its aggregation level.
@@ -87,7 +86,7 @@ def calc_pos(node, aggregation_levels, level_of_detail):
     return 0, 0
 
 
-def generate_elements(file, level_of_detail, sector):
+def generate_elements(file, level_of_detail, sector, process_list):
     """Generates the nodes and edges of the aggregation graph.
 
     Parameters
@@ -108,22 +107,50 @@ def generate_elements(file, level_of_detail, sector):
     """
     wb = load_workbook(file)
     sheet = wb["Aggregation_Mapping"]
+    lod_levels = [3, 2, 1, 0]
+    aggregation_levels = {}
+    for n in lod_levels:
+        aggregation_levels[n] = [item for item in get_aggregation_level(n, sheet) if item.startswith(sector)]
+    agg_list = sum(aggregation_levels.values(), [])
+    process_list_sector = [item for item in process_list if item.startswith(sector)]
 
-    aggregation_levels = {
-        3: [item for item in get_aggregation_level(3, sheet) if item.startswith(sector)],
-        2: [item for item in get_aggregation_level(2, sheet) if item.startswith(sector)],
-        1: [item for item in get_aggregation_level(1, sheet) if item.startswith(sector)],
-        0: [item for item in get_aggregation_level(0, sheet) if item.startswith(sector)]
-    }
-
-    process_list = sum(aggregation_levels.values(), [])
-    nodes = create_nodes(process_list, aggregation_levels, level_of_detail)
-    edges = create_edges(sheet, process_list, sector, nodes, aggregation_levels, level_of_detail)
-
+    # Those processes which are in the Process_Set but are not in the Aggregation_Mapping are added to the list
+    no_agg_list = list(set(process_list_sector) - set(agg_list))
+    aggregation_levels[0] = aggregation_levels[0] + no_agg_list
+    agg_list = agg_list + no_agg_list
+    nodes = create_nodes(agg_list, aggregation_levels, level_of_detail)
+    edges = create_edges(sheet, agg_list, sector, nodes, aggregation_levels, level_of_detail)
     return nodes, edges
 
+def generate_df_lod(file, lod, process_list):
+    """Returns a dataframe where columns denote sectors and rows its related processes for a chosen level of detail (lod).
 
-def create_nodes(process_list, aggregation_levels, level_of_detail):
+    Parameters
+    ----------
+    file: str
+        The path to the Excel file of the Model Structure.
+    lod: int
+        The level of detail chosen by the user.
+    process_list: list
+        The list of all processes from the Process_Set.
+
+    Returns
+    -------
+    dataframe
+        All processes for a certain level of detail.
+    """
+    df_lod = pd.DataFrame()
+
+    sectors = ["pow", "x2x", "hea", "ind", "tra"]
+    for sector in sectors:
+        nodes, edges = generate_elements(file, lod, sector, process_list)
+        # filter_elements(nodes, edges, lod)
+        edge_sources_list = [item['data']['source'] for item in edges]
+        lod_list = [item['data']['id'] for item in nodes if item['data']['id'] not in edge_sources_list]
+        df_lod = pd.concat([df_lod, pd.Series(lod_list, name=sector)], axis=1)
+    return df_lod
+
+def create_nodes(agg_list, aggregation_levels, level_of_detail):
     """Creates the nodes for the aggregation graph.
 
     Parameters
@@ -142,7 +169,7 @@ def create_nodes(process_list, aggregation_levels, level_of_detail):
     """
     nodes = []
 
-    for node in process_list:
+    for node in agg_list:
         x, y = calc_pos(node, aggregation_levels, level_of_detail)
         nodes.append({
             "data": {"id": node, "label": node},
@@ -160,7 +187,7 @@ def create_nodes(process_list, aggregation_levels, level_of_detail):
     return nodes
 
 
-def create_edges(sheet, process_list, sector, nodes, aggregation_levels, level_of_detail):
+def create_edges(sheet, agg_list, sector, nodes, aggregation_levels, level_of_detail):
     """Creates the edges for the aggregation graph.
 
     Parameters
@@ -185,7 +212,7 @@ def create_edges(sheet, process_list, sector, nodes, aggregation_levels, level_o
 
     for row in sheet.iter_rows(min_row=2, min_col=1, max_col=1):
         for cell in row:
-            if cell.value in process_list and cell.offset(column=1).value in process_list:
+            if cell.value in agg_list and cell.offset(column=1).value in agg_list:
                 edges.append({"data": {"source": cell.value, "target": cell.offset(column=1).value}})
                 for node in nodes:
                     if node["data"]["id"] == cell.value:
@@ -195,7 +222,7 @@ def create_edges(sheet, process_list, sector, nodes, aggregation_levels, level_o
                 i = 1
                 while cell.offset(row=-i).value is None:
                     i += 1
-                if cell.offset(row=-i).value in process_list and cell.offset(column=1).value in process_list:
+                if cell.offset(row=-i).value in agg_list and cell.offset(column=1).value in agg_list:
                     edges.append({"data": {"source": cell.offset(row=-i).value, "target": cell.offset(column=1).value}})
 
     nodes.append({
@@ -206,7 +233,7 @@ def create_edges(sheet, process_list, sector, nodes, aggregation_levels, level_o
         "level_of_detail": 0,
     })
 
-    for node in process_list:
+    for node in agg_list:
         if not any(edge["data"]["target"] == node for edge in edges):
             edges.append({"data": {"source": sector, "target": node}})
 
