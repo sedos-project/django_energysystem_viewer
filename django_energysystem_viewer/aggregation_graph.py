@@ -109,8 +109,15 @@ def generate_elements(file, level_of_detail, sector, process_list):
     sheet = wb["Aggregation_Mapping"]
     lod_levels = [3, 2, 1, 0]
     aggregation_levels = {}
+    none_items = []
     for n in lod_levels:
-        aggregation_levels[n] = [item for item in get_aggregation_level(n, sheet) if item.startswith(sector)]
+        aggregation_levels[n] = []
+        for item in get_aggregation_level(n, sheet):
+            if item is None:
+                none_items.append(item)
+            elif item.startswith(sector):
+                aggregation_levels[n].append(item)
+    print("Count of None items:", len(none_items))
     agg_list = sum(aggregation_levels.values(), [])
     process_list_sector = [item for item in process_list if item.startswith(sector)]
 
