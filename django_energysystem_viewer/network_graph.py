@@ -1,5 +1,6 @@
 import igraph as ig
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 from django.conf import settings
 from typing import List, Tuple, Union
@@ -11,6 +12,7 @@ def generate_Graph(
         separate_commodities: str,
         process_specific: str,
         commodity_specific: str,
+        nomenclature_level: int,
 ) -> go.Figure:
     """
     Generate a Plotly graph for the selected sectors and algorithm.
@@ -57,11 +59,11 @@ def generate_Graph(
     if not process_specific and not commodity_specific:
         if separate_commodities == "sep":
             for sector in selected_sectors:
-                traces = generate_trace(updated_process_set, sector, algorithm, "sep")
+                traces = generate_trace(updated_process_set, sector, algorithm, "sep", nomenclature_level)
                 fig.add_traces(traces)
         elif separate_commodities == "agg":
             for sector in selected_sectors:
-                traces = generate_trace(updated_process_set, sector, algorithm, "agg")
+                traces = generate_trace(updated_process_set, sector, algorithm, "agg", nomenclature_level)
                 fig.add_traces(traces)
     elif process_specific:
         traces = generate_trace_process_specific(updated_process_set, process_specific)
@@ -72,7 +74,7 @@ def generate_Graph(
 
     fig.update_xaxes(visible=False)
     fig.update_yaxes(visible=False)
-    predefined_order = ["edges_pow","edges_x2x","edges_hea","edges_ind","edges_tra", "pow", "x2x", "hea", "ind", "tra", "pri", "sec", "exo", "iip", "emi"]
+    predefined_order = ["edges_pow","edges_x2x","edges_hea","edges_ind","edges_tra", "pow", "x2x", "hea", "ind", "tra", "pri", "sec", "exo", "iip"]
     fig = update_layout_with_unique_legend(fig, predefined_order)
     # Update the layout for the legend position
     fig.update_layout(legend=dict(y=0.5, yanchor="middle")
@@ -80,7 +82,7 @@ def generate_Graph(
 
     return fig
 
-def generate_trace(process_set: pd.DataFrame, sector: str, algorithm: str, separate_commodities: str) -> List[
+def generate_trace(process_set: pd.DataFrame, sector: str, algorithm: str, separate_commodities: str, nomenclature_level : int) -> List[
     go.Scatter]:
     """
     Generate Plotly traces for nodes and edges.
@@ -96,7 +98,19 @@ def generate_trace(process_set: pd.DataFrame, sector: str, algorithm: str, separ
     """
     # process_set = process_set[~process_set["process"].str.endswith(("_ag_0","_ag_1"))]
 
-    inputs, outputs, processes = get_filtered_process_data(process_set, sector)
+    # Group all processes according to their nomenclature with informations levels divided by underscores
+    # process_set.replace({np.nan: None}, inplace=True)
+    process_set['process_trimmed'] = process_set['process'].apply(lambda x: '_'.join(x.split('_')[:nomenclature_level]))
+    process_set_grouped = process_set.groupby('process_trimmed').agg({
+        'input': lambda x: ','.join(map(str, filter(pd.notna, x))),
+        'output': lambda x: ','.join(map(str, filter(pd.notna, x)))
+    }).reset_index()
+    process_set_grouped.rename(columns={'process_trimmed': 'process'}, inplace=True)
+    # Remove duplicate inputs/outputs after the grouping
+    process_set_grouped['input'] = process_set_grouped['input'].apply(lambda x: ','.join(sorted(set(x.split(',')))) if pd.notna(x) else x)
+    process_set_grouped['output'] = process_set_grouped['output'].apply(lambda x: ','.join(sorted(set(x.split(',')))) if pd.notna(x) else x)
+
+    inputs, outputs, processes = get_filtered_process_data(process_set_grouped, sector)
 
     nodes, edges = create_nodes_and_edges(inputs, outputs, processes)
     G = ig.Graph(edges)
@@ -290,16 +304,23 @@ def create_nodes_and_edges(inputs: List[str], outputs: List[str], processes: Lis
     Tuple[List[str], List[Tuple[int, int]]]: Nodes and edges.
     """
     nodes, edges = [], []
-
+    #TODO: es gibt noch doppelte commodities von unterschiedlichen Sektoren (z.B. sec_elec)
     for i in range(len(processes)):
         input_list = inputs[i].split(",") if isinstance(inputs[i], str) else []
         input_list = [item.strip().replace("[", "").replace("]", "") for item in input_list]
+        input_list = [item.strip().replace("_orig", "") for item in input_list]
+        input_list = [commodity for commodity in input_list if isinstance(commodity, str) and not commodity.startswith('emi')]
 
         output_list = outputs[i].split(",") if isinstance(outputs[i], str) else []
         output_list = [item.strip().replace("[", "").replace("]", "") for item in output_list]
+        output_list = [item.strip().replace("_orig", "") for item in output_list]
+        output_list = [commodity for commodity in output_list if isinstance(commodity, str) and not commodity.startswith('emi')]
 
         process_list = processes[i].split(",") if isinstance(processes[i], str) else []
         process_list = [item.strip().replace("[", "").replace("]", "") for item in process_list]
+
+        input_list = [input_node for input_node in input_list if input_node != '']
+        output_list = [ouput_node for ouput_node in output_list if ouput_node != '']
 
         for input_node in input_list:
             if input_node not in nodes:
