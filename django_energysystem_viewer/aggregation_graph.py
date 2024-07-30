@@ -2,7 +2,7 @@ from openpyxl import load_workbook
 import pandas as pd
 
 
-def generate_aggregation_graph(file, sectors, lod, process_list):
+def generate_aggregation_graph(df_aggregation_mapping, sectors, lod, process_list):
     """Generates the aggregation graph as a dash component using the functions below.
 
     Parameters
@@ -22,21 +22,22 @@ def generate_aggregation_graph(file, sectors, lod, process_list):
     collapsed_nodes = []
     sector = sectors
 
-    nodes, edges = generate_elements(file, lod, sector, process_list)
+    nodes, edges = generate_elements(df_aggregation_mapping, lod, sector, process_list)
     elements = elements_after_collapse(collapsed_nodes, nodes, edges)
 
     return elements
 
 
-def get_aggregation_level(target_value, sheet):
-    """Returns a list of all processes of one aggregation level.
+def get_aggregation_level(target_value: int, df: pd.DataFrame) -> list:
+    """
+    Returns a list of all processes of one aggregation level.
 
     Parameters
     ----------
     target_value: int
         The target value to compare.
-    sheet: str
-        The sheet of the Excel file of the Model Structure.
+    df: pd.DataFrame
+        The DataFrame of the Model Structure.
 
     Returns
     -------
@@ -45,13 +46,13 @@ def get_aggregation_level(target_value, sheet):
     """
     elements = []
 
-    for row in sheet.iter_rows(min_row=2, min_col=1, max_col=4):
-        for idx, cell in enumerate(row):
-            if idx < 2:
-                compare_cell_value = row[idx + 2].value
-                if compare_cell_value == target_value:
-                    elements.append(cell.value)
+    for _, row in df.iterrows():
+        for idx in range(2):
+            compare_cell_value = row.iloc[idx + 2]
+            if compare_cell_value == target_value:
+                elements.append(row.iloc[idx])
 
+    # Remove duplicates while preserving order
     return list(dict.fromkeys(elements))
 
 def calc_pos(node, aggregation_levels, level_of_detail):
@@ -86,7 +87,7 @@ def calc_pos(node, aggregation_levels, level_of_detail):
     return 0, 0
 
 
-def generate_elements(file, level_of_detail, sector, process_list):
+def generate_elements(df_aggregation_mapping, level_of_detail, sector, process_list):
     """Generates the nodes and edges of the aggregation graph.
 
     Parameters
@@ -105,19 +106,17 @@ def generate_elements(file, level_of_detail, sector, process_list):
     list
         The list of all edges.
     """
-    wb = load_workbook(file)
-    sheet = wb["Aggregation_Mapping"]
     lod_levels = [3, 2, 1, 0]
     aggregation_levels = {}
     none_items = []
     for n in lod_levels:
         aggregation_levels[n] = []
-        for item in get_aggregation_level(n, sheet):
+        for item in get_aggregation_level(n, df_aggregation_mapping):
             if item is None:
                 none_items.append(item)
             elif item.startswith(sector):
                 aggregation_levels[n].append(item)
-    print("Count of None items:", len(none_items))
+    # print("Count of None items:", len(none_items))
     agg_list = sum(aggregation_levels.values(), [])
     process_list_sector = [item for item in process_list if item.startswith(sector)]
 
@@ -126,7 +125,7 @@ def generate_elements(file, level_of_detail, sector, process_list):
     aggregation_levels[0] = aggregation_levels[0] + no_agg_list
     agg_list = agg_list + no_agg_list
     nodes = create_nodes(agg_list, aggregation_levels, level_of_detail)
-    edges = create_edges(sheet, agg_list, sector, nodes, aggregation_levels, level_of_detail)
+    edges = create_edges(df_aggregation_mapping, agg_list, sector, nodes, aggregation_levels, level_of_detail)
     return nodes, edges
 
 def generate_df_lod(file, lod, process_list):
@@ -194,13 +193,13 @@ def create_nodes(agg_list, aggregation_levels, level_of_detail):
     return nodes
 
 
-def create_edges(sheet, agg_list, sector, nodes, aggregation_levels, level_of_detail):
+def create_edges(df_aggregation_mapping, agg_list, sector, nodes, aggregation_levels, level_of_detail):
     """Creates the edges for the aggregation graph.
 
     Parameters
     ----------
-    sheet: object
-        The sheet object of the Excel file.
+    df_aggregation_mapping: Dataframe
+        The dataframe with the aggregation mapping
     process_list: list
         The list of all processes.
     sector: str
@@ -217,20 +216,23 @@ def create_edges(sheet, agg_list, sector, nodes, aggregation_levels, level_of_de
     """
     edges = []
 
-    for row in sheet.iter_rows(min_row=2, min_col=1, max_col=1):
-        for cell in row:
-            if cell.value in agg_list and cell.offset(column=1).value in agg_list:
-                edges.append({"data": {"source": cell.value, "target": cell.offset(column=1).value}})
-                for node in nodes:
-                    if node["data"]["id"] == cell.value:
-                        node["collapsible"] = True
-                        break
-            elif cell.value is None and cell.offset(column=1).value is not None:
-                i = 1
-                while cell.offset(row=-i).value is None:
-                    i += 1
-                if cell.offset(row=-i).value in agg_list and cell.offset(column=1).value in agg_list:
-                    edges.append({"data": {"source": cell.offset(row=-i).value, "target": cell.offset(column=1).value}})
+    for idx, row in df_aggregation_mapping.iterrows():
+        source = row.iloc[0]
+        target = row.iloc[1]
+
+        if source in agg_list and target in agg_list:
+            edges.append({"data": {"source": source, "target": target}})
+            for node in nodes:
+                if node["data"]["id"] == source:
+                    node["collapsible"] = True
+                    break
+        elif pd.isna(source) and not pd.isna(target):
+            i = idx - 1
+            while pd.isna(df_aggregation_mapping.iloc[i, 0]):
+                i -= 1
+            source = df_aggregation_mapping.iloc[i, 0]
+            if source in agg_list and target in agg_list:
+                edges.append({"data": {"source": source, "target": target}})
 
     nodes.append({
         "data": {"id": sector, "label": sector},
