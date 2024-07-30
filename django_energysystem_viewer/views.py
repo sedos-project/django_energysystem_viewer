@@ -25,9 +25,10 @@ class SelectionView(TemplateView):
         }
 
 
-def get_excel_data(file: str, sheets: list, mode: str):
+def get_excel_data(file: str, mode: str):
     excel_filename = f"{file}.xlsx"
     path = str(adapter_settings.STRUCTURES_DIR / excel_filename)
+    sheets = ["Process_Set", "Helper_Set", "Aggregation_Mapping"]
     if mode == "network":
         # Read the data from process_set and helper_set sheets
         process_set = pd.read_excel(path, sheet_name=sheets[0])
@@ -36,14 +37,14 @@ def get_excel_data(file: str, sheets: list, mode: str):
         process_set = process_set[['input','process','output']]
         helper_set = helper_set[['input','process','output']]
         # Concatenate the data from both sheets
-        data = pd.concat([process_set, helper_set], ignore_index=True)
+        complete_set = pd.concat([process_set, helper_set], ignore_index=True)
         # Filter processes which should not appear in any graph feature
         process_filter = ['x2x_import','x2x_delivery','helper_sink','helper_pow_flow','helper_co2']
-        data = data[~data['process'].str.contains('|'.join(process_filter))]
-        return data
+        complete_set = complete_set[~complete_set['process'].str.contains('|'.join(process_filter))]
+        return complete_set
     if mode == "aggregation":
         process_set = pd.read_excel(path, sheet_name=sheets[0])
-        aggregation_mapping = pd.read_excel(path, sheet_name=sheets[1])
+        aggregation_mapping = pd.read_excel(path, sheet_name=sheets[2])
         return process_set, aggregation_mapping
 
 def write_excel_data(data: pd.DataFrame, dir: str):
@@ -51,7 +52,7 @@ def write_excel_data(data: pd.DataFrame, dir: str):
 
 def network(request):
     structure_name = request.GET.get("structure")
-    process_set = get_excel_data(structure_name, ["Process_Set", "Helper_Set"], mode="network")
+    process_set = get_excel_data(structure_name, mode="network")
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
@@ -90,7 +91,7 @@ def network(request):
 def network_graph(request):
     # # load the process set, change the path if necessary
     structure_name = request.GET.get("structure")
-    updated_process_set = get_excel_data(structure_name, ["Process_Set", "Helper_Set"], mode="network")
+    updated_process_set = get_excel_data(structure_name, mode="network")
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
     process = request.GET.get("process")
@@ -112,17 +113,16 @@ class AggregationView(TemplateView):
 def aggregation_graph(request):
     sectors = request.GET["sectors"]
     lod = int(request.GET["lod"])
-    df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", ["Process_Set", "Aggregation_Mapping"], mode="aggregation")
+    df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", mode="aggregation")
     process_list = list(df_process_set["process"].unique())
     elements = ag.generate_aggregation_graph(df_aggregation_mapping, sectors, lod, process_list)
     return JsonResponse({"elements": elements}, safe=False)
 
 def write_lod_list(request):
     lod = int(request.GET["lod"])
-
-    process_set = get_excel_data("SEDOS-structure-all", "Process_Set", mode="network")
-    process_list = list(process_set["process"].unique())
-    df_lod = ag.generate_df_lod(str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx"), lod, process_list)
+    df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", mode="aggregation")
+    process_list = list(df_process_set["process"].unique())
+    df_lod = ag.generate_df_lod(df_aggregation_mapping, lod, process_list)
 
     # Use an in-memory BytesIO stream instead of saving to disk
     output = io.BytesIO()

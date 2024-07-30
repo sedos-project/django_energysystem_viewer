@@ -128,7 +128,7 @@ def generate_elements(df_aggregation_mapping, level_of_detail, sector, process_l
     edges = create_edges(df_aggregation_mapping, agg_list, sector, nodes, aggregation_levels, level_of_detail)
     return nodes, edges
 
-def generate_df_lod(file, lod, process_list):
+def generate_df_lod(df_aggregation_mapping, lod, process_list):
     """Returns a dataframe where columns denote sectors and rows its related processes for a chosen level of detail (lod).
 
     Parameters
@@ -149,7 +149,7 @@ def generate_df_lod(file, lod, process_list):
 
     sectors = ["pow", "x2x", "hea", "ind", "tra"]
     for sector in sectors:
-        nodes, edges = generate_elements(file, lod, sector, process_list)
+        nodes, edges = generate_elements(df_aggregation_mapping, lod, sector, process_list)
         # filter_elements(nodes, edges, lod)
         edge_sources_list = [item['data']['source'] for item in edges]
         lod_list = [item['data']['id'] for item in nodes if item['data']['id'] not in edge_sources_list]
