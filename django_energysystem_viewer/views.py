@@ -92,12 +92,12 @@ def network_graph(request):
     updated_process_set = get_excel_data(structure_name, ["Process_Set", "Helper_Set"])
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
-    sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
     nomenclature_level = int(request.GET.get("nomenclature_level"))
+    # sep_agg = request.GET.get("seperate_join")
     return HttpResponse(
-        ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity, nomenclature_level).to_html()
+        ng.generate_Graph(updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level).to_html()
     )
 
 class AggregationView(TemplateView):
