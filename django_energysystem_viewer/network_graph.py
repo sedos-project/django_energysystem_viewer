@@ -216,18 +216,25 @@ def generate_layout(G: ig.Graph, algorithm: str) -> ig.Layout:
     Returns:
     ig.Layout: The generated layout.
     """
-    layout_mapping = {
-        "dav": G.layout_davidson_harel,
-        "drl": G.layout_drl,
-        "fr": G.layout_fruchterman_reingold,
-        "go": G.layout_graphopt,
-        "kk": G.layout_kamada_kawai,
-        "lgl": G.layout_lgl,
-        "mds": G.layout_mds,
-        "umap": G.layout_umap,
+    # Rejected layout algorithms
+    # “drl”: G.layout_drl, # very bundled, not clear
+    # “mds”: G.layout_mds, # cornered, not clear
+    # "lgl": G.layout_lgl, # two-dimensional connection
+    # "umap": G.layout_umap, # not working properly
+    # "dav": G.layout_davidson_harel, # not working properly
+
+    layout_mapping_with_dim = {
+        "kk": G.layout_kamada_kawai,  #1 clear centrality, radial edges
+        "fr": G.layout_fruchterman_reingold,  #2 clear centrality,
     }
-    layout_func = layout_mapping.get(algorithm)
-    return layout_func(dim=2) if layout_func else G.layout_fruchterman_reingold(dim=2)
+    layout_mapping_without_dim = {
+        "go": G.layout_graphopt, #3 fast, very distributed and less sorted nodes
+    }
+    if algorithm in layout_mapping_with_dim:
+        return layout_mapping_with_dim[algorithm](dim=2)
+    elif algorithm in layout_mapping_without_dim:
+        return layout_mapping_without_dim[algorithm]()
+
 
 def get_node_attributes(nodes: List[str], processes: List[str]) -> Tuple[List[str], List[str], List[str]]:
     """

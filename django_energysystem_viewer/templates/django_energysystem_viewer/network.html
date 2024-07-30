@@ -34,22 +34,9 @@
             <select id="mapping" name="mapping">
               <option label="kk" value="kk"></option>
               <option label="fr" value="fr" selected></option>
-              <option label="drl" value="drl"></option>
-              <option label="umag" value="umag"></option>
               <option label="go" value="go"></option>
-              <option label="dav" value="dav"></option>
-              <option label="lgl" value="lgl"></option>
             </select>
             <br>
-{#            <label for="seperate_join">Sectors separate or joined:</label>#}
-{#            <br>#}
-{#            <input type="radio" id="joined" name="seperate_join" value="agg" checked>#}
-{#            <label for="joined">Aggregate Sectors</label>#}
-{#            <br>#}
-{#            <input type="radio" id="seperate" name="seperate_join" value="sep">#}
-{#            <label for="seperate">Separate Sectors</label>#}
-{#            <br>#}
-{#            <div>You can choose to filter a specific process or a specific commodity.</div>#}
             <div id="proc_comm"
                  _="on input if #process.value add @disabled to #commodity else remove @disabled from #commodity end on input if #commodity.value add @disabled to #process else remove @disabled from #process">
               <label for="process">Display specific process:</label>
