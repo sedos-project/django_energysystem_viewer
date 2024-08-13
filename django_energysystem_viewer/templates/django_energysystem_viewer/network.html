@@ -13,14 +13,7 @@
                 hx-target="#network_graph"
                 hx-trigger="change">
             <input type="hidden" name="structure" value="{{ structure_name }}" />
-            <label for="mapping">Mapping:</label>
-            <select id="mapping" name="mapping">
-              <option label="fr" value="fr" selected></option>
-              <option label="drl" value="drl"></option>
-              <option label="kk" value="kk"></option>
-              <option label="go" value="go"></option>
-            </select>
-            <br>
+
             <label for="sectors">Sectors:</label>
             <select id="sectors" name="sectors" multiple>
               <option label="Power" value="pow" selected></option>
@@ -30,18 +23,23 @@
               <option label="Heat" value="hea"></option>
               <option label="Helper" value="hel"></option>
             </select>
-            <label for="seperate_join">Sectors separate or joined:</label>
             <br>
-            <input type="radio" id="joined" name="seperate_join" value="agg" checked>
-            <label for="joined">Aggregate Sectors</label>
+              <label for="nomenclature_level">Complexity:</label>
+              <select id="nomenclature_level" name="nomenclature_level">
+              <option label="full" value=20 selected></option>
+              <option label="reduced" value=3></option>
+              <option label="simple" value=2></option>
+            </select>
+            <label for="mapping">Mapping:</label>
+            <select id="mapping" name="mapping">
+              <option label="kk" value="kk"></option>
+              <option label="fr" value="fr" selected></option>
+              <option label="go" value="go"></option>
+            </select>
             <br>
-            <input type="radio" id="seperate" name="seperate_join" value="sep">
-            <label for="seperate">Separate Sectors</label>
-            <br>
-            <div>You can choose to filter a specific process or a specific commodity.</div>
             <div id="proc_comm"
                  _="on input if #process.value add @disabled to #commodity else remove @disabled from #commodity end on input if #commodity.value add @disabled to #process else remove @disabled from #process">
-              <label for="process">Choose specific process to display:</label>
+              <label for="process">Display specific process:</label>
               <input list="processes"
                      id="process"
                      name="process"
@@ -49,7 +47,7 @@
               <datalist id="processes">
                 {% for process in unique_processes %}<option value="{{ process }}"></option>{% endfor %}
               </datalist>
-              <label for="commodity">Choose specific commodity to display:</label>
+              <label for="commodity">Display specific commodity:</label>
               <input list="commodities"
                      id="commodity"
                      name="commodity"

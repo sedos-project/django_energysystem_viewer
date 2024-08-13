@@ -25,17 +25,34 @@ class SelectionView(TemplateView):
         }
 
 
-def get_excel_data(file: str, sheet: str):
+def get_excel_data(file: str, mode: str):
     excel_filename = f"{file}.xlsx"
-    data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / excel_filename), sheet)
-    return data
+    path = str(adapter_settings.STRUCTURES_DIR / excel_filename)
+    sheets = ["Process_Set", "Helper_Set", "Aggregation_Mapping"]
+    if mode == "network":
+        # Read the data from process_set and helper_set sheets
+        process_set = pd.read_excel(path, sheet_name=sheets[0])
+        helper_set = pd.read_excel(path, sheet_name=sheets[1])
+        # Select the relevant columns
+        process_set = process_set[['input','process','output']]
+        helper_set = helper_set[['input','process','output']]
+        # Concatenate the data from both sheets
+        complete_set = pd.concat([process_set, helper_set], ignore_index=True)
+        # Filter processes which should not appear in any graph feature
+        process_filter = ['x2x_import','x2x_delivery','helper_sink','helper_pow_flow','helper_co2']
+        complete_set = complete_set[~complete_set['process'].str.contains('|'.join(process_filter))]
+        return complete_set
+    if mode == "aggregation":
+        process_set = pd.read_excel(path, sheet_name=sheets[0])
+        aggregation_mapping = pd.read_excel(path, sheet_name=sheets[2])
+        return process_set, aggregation_mapping
 
 def write_excel_data(data: pd.DataFrame, dir: str):
     data.to_excel(dir)
 
 def network(request):
     structure_name = request.GET.get("structure")
-    process_set = get_excel_data(structure_name, "Process_Set")
+    process_set = get_excel_data(structure_name, mode="network")
     unique_processes = process_set["process"].unique()
 
     # get the inputs and outputs of the filtered process set
@@ -63,7 +80,7 @@ def network(request):
         request,
         "django_energysystem_viewer/network.html",
         {
-            "network_graph": ng.generate_Graph(process_set, ["pow", "x2x"], "fr", "agg", None, None).to_html(),
+            "network_graph": ng.generate_Graph(process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=None).to_html(),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -74,15 +91,15 @@ def network(request):
 def network_graph(request):
     # # load the process set, change the path if necessary
     structure_name = request.GET.get("structure")
-    # structure_name = 'SEDOS_Stahlindustrie' #'SEDOS_Modellstruktur'
-    updated_process_set = get_excel_data(structure_name, "Process_Set")
+    updated_process_set = get_excel_data(structure_name, mode="network")
     sectors = request.GET.getlist("sectors")
     mapping = request.GET["mapping"]
-    sep_agg = request.GET.get("seperate_join")
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
+    nomenclature_level = int(request.GET.get("nomenclature_level"))
+    # sep_agg = request.GET.get("seperate_join")
     return HttpResponse(
-        ng.generate_Graph(updated_process_set, sectors, mapping, sep_agg, process, commodity).to_html()
+        ng.generate_Graph(updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level).to_html()
     )
 
 class AggregationView(TemplateView):
@@ -96,17 +113,16 @@ class AggregationView(TemplateView):
 def aggregation_graph(request):
     sectors = request.GET["sectors"]
     lod = int(request.GET["lod"])
-    process_set = get_excel_data("SEDOS-structure-all", "Process_Set")
-    process_list = list(process_set["process"].unique())
-    elements = ag.generate_aggregation_graph(str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx"), sectors, lod, process_list)
+    df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", mode="aggregation")
+    process_list = list(df_process_set["process"].unique())
+    elements = ag.generate_aggregation_graph(df_aggregation_mapping, sectors, lod, process_list)
     return JsonResponse({"elements": elements}, safe=False)
 
 def write_lod_list(request):
     lod = int(request.GET["lod"])
-
-    process_set = get_excel_data("SEDOS-structure-all", "Process_Set")
-    process_list = list(process_set["process"].unique())
-    df_lod = ag.generate_df_lod(str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx"), lod, process_list)
+    df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", mode="aggregation")
+    process_list = list(df_process_set["process"].unique())
+    df_lod = ag.generate_df_lod(df_aggregation_mapping, lod, process_list)
 
     # Use an in-memory BytesIO stream instead of saving to disk
     output = io.BytesIO()
