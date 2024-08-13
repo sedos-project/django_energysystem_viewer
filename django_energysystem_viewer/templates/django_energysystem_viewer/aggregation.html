@@ -7,6 +7,13 @@
   <div class="container">
     <h3>Aggregation Graph</h3>
     <form id="aggregation_form">
+          <label for="lod">Choose the desired level of detail:</label>
+          <input type="radio" id="lod" name="lod" value=1>
+          <label for="lod">1</label>
+          <input type="radio" id="lod" name="lod" value=2 checked>
+          <label for="lod">2</label>
+          <input type="radio" id="lod" name="lod" value=3>
+          <label for="lod" style="margin-right: 100px;" >3</label>
           <input type="hidden" name="structure" value="{{ structure_name }}" />
           <label for="sectors">Choose Sector:</label>
           <input type="radio" id="sectors" name="sectors" value="pow" checked>
@@ -18,16 +25,12 @@
           <input type="radio" id="sectors" name="sectors" value="ind">
           <label for="sectors">Industry</label>
           <input type="radio" id="sectors" name="sectors" value="tra">
-          <label for="sectors" style="margin-right: 200px;">Transport</label>
-          <label for="lod">Choose the desired level of detail:</label>
-          <input type="radio" id="lod" name="lod" value=1>
-          <label for="lod">1</label>
-          <input type="radio" id="lod" name="lod" value=2 checked>
-          <label for="lod">2</label>
-          <input type="radio" id="lod" name="lod" value=3>
-          <label for="lod">3</label>
+          <label for="sectors" style="margin-right: 100px;">Transport</label>
     </form>
-    <div id="aggregation_graph" style="width: auto; height: 900px"></div>
+    <div style="position: relative;">
+      <div id="aggregation_graph" style="width: auto; height: 900px"></div>
+      <button id="download_button" style="position: absolute; top: 10px; left: 0px;">Download processes from all sectors for level of detail </button>
+    </div>
   </div>
 {% endblock content %}
 
@@ -77,6 +80,18 @@
                 })
                 .catch(error => console.error('Error requesting aggregation data:', error));
         }
+
+        const download_button = document.getElementById("download_button");
+        download_button.addEventListener("click", function() {
+            const formData = new FormData(aggregation_form);
+            const url = "/energysystem/lod_list";
+
+            // Append form data to URL
+            const queryString = new URLSearchParams(formData).toString();
+            var downloadUrl = url + "?" + queryString;
+
+            window.location.href = downloadUrl;
+            });
     });
   </script>
 {% endblock javascript %}

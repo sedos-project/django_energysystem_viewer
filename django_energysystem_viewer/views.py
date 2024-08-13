@@ -1,9 +1,11 @@
 import pandas as pd
+import io
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.http import FileResponse, HttpResponseBadRequest
 
 from django_energysystem_viewer import aggregation_graph as ag
 from django_energysystem_viewer import network_graph as ng
@@ -28,6 +30,8 @@ def get_excel_data(file: str, sheet: str):
     data = pd.read_excel(str(adapter_settings.STRUCTURES_DIR / excel_filename), sheet)
     return data
 
+def write_excel_data(data: pd.DataFrame, dir: str):
+    data.to_excel(dir)
 
 def network(request):
     structure_name = request.GET.get("structure")
@@ -90,12 +94,31 @@ class AggregationView(TemplateView):
 
 
 def aggregation_graph(request):
-    file = str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx")
     sectors = request.GET["sectors"]
-    lod = request.GET["lod"]
-    elements = ag.generate_aggregation_graph(file, sectors, lod)
+    lod = int(request.GET["lod"])
+    process_set = get_excel_data("SEDOS-structure-all", "Process_Set")
+    process_list = list(process_set["process"].unique())
+    elements = ag.generate_aggregation_graph(str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx"), sectors, lod, process_list)
     return JsonResponse({"elements": elements}, safe=False)
 
+def write_lod_list(request):
+    lod = int(request.GET["lod"])
+
+    process_set = get_excel_data("SEDOS-structure-all", "Process_Set")
+    process_list = list(process_set["process"].unique())
+    df_lod = ag.generate_df_lod(str(adapter_settings.STRUCTURES_DIR / "SEDOS-structure-all.xlsx"), lod, process_list)
+
+    # Use an in-memory BytesIO stream instead of saving to disk
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='openpyxl')
+    df_lod.to_excel(writer, index=False)
+    writer.close()
+    output.seek(0)
+
+    # Create a file response
+    filename = f"aggregations_lod_{lod}.xlsx"
+    response = FileResponse(output, as_attachment=True, filename=filename)
+    return response
 
 def abbreviations(request):
     structure_name = request.GET.get("structure")
