@@ -28,7 +28,7 @@ class SelectionView(TemplateView):
 def get_excel_data(file: str, mode: str):
     excel_filename = f"{file}.xlsx"
     path = str(adapter_settings.STRUCTURES_DIR / excel_filename)
-    sheets = ["Process_Set", "Helper_Set", "Aggregation_Mapping"]
+    sheets = ["Process_Set", "Helper_Set", "Aggregation_Mapping", "Abbreviations"]
     if mode == "network":
         # Read the data from process_set and helper_set sheets
         process_set = pd.read_excel(path, sheet_name=sheets[0])
@@ -46,6 +46,9 @@ def get_excel_data(file: str, mode: str):
         process_set = pd.read_excel(path, sheet_name=sheets[0])
         aggregation_mapping = pd.read_excel(path, sheet_name=sheets[2])
         return process_set, aggregation_mapping
+    if mode == "abbreviations":
+        abbreviations = pd.read_excel(path, sheet_name=sheets[3])
+        return abbreviations
 
 def write_excel_data(data: pd.DataFrame, dir: str):
     data.to_excel(dir)
@@ -138,7 +141,7 @@ def write_lod_list(request):
 
 def abbreviations(request):
     structure_name = request.GET.get("structure")
-    abbreviations = get_excel_data(structure_name, "Abbreviations")
+    abbreviations = get_excel_data(structure_name, "abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     return render(
         request,
@@ -150,7 +153,7 @@ def abbreviations(request):
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
     structure_name = request.GET.get("structure")
-    abbreviations = get_excel_data(structure_name, "Abbreviations")
+    abbreviations = get_excel_data(structure_name, "abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
         if len(meaning) > 0:
