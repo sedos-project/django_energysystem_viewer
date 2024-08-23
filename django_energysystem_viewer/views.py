@@ -1,11 +1,11 @@
-import pandas as pd
 import io
+
+import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.http import FileResponse, HttpResponseBadRequest
 
 from django_energysystem_viewer import aggregation_graph as ag
 from django_energysystem_viewer import network_graph as ng
@@ -34,27 +34,30 @@ def get_excel_data(file: str, mode: str):
         process_set = pd.read_excel(path, sheet_name=sheets[0])
         helper_set = pd.read_excel(path, sheet_name=sheets[1])
         # Select the relevant columns
-        process_set = process_set[['input','process','output']]
-        helper_set = helper_set[['input','process','output']]
+        process_set = process_set[["input", "process", "output"]]
+        helper_set = helper_set[["input", "process", "output"]]
         # Concatenate the data from both sheets
         complete_set = pd.concat([process_set, helper_set], ignore_index=True)
         # Filter processes which should not appear in any graph feature
-        process_filter = ['x2x_import','x2x_delivery','helper_sink','helper_pow_flow','helper_co2']
-        complete_set = complete_set[~complete_set['process'].str.contains('|'.join(process_filter))]
+        process_filter = ["x2x_import", "x2x_delivery", "helper_sink", "helper_pow_flow", "helper_co2"]
+        complete_set = complete_set[~complete_set["process"].str.contains("|".join(process_filter))]
         return complete_set
     if mode == "aggregation":
         process_set = pd.read_excel(path, sheet_name=sheets[0])
         aggregation_mapping = pd.read_excel(path, sheet_name=sheets[2])
         return process_set, aggregation_mapping
     if mode == "abbreviations":
-        abbreviations = pd.read_excel(path, sheet_name=sheets[3])
-        return abbreviations
+        return pd.read_excel(path, sheet_name=sheets[3])
+
 
 def write_excel_data(data: pd.DataFrame, dir: str):
     data.to_excel(dir)
 
+
 def network(request):
     structure_name = request.GET.get("structure")
+    abbreviations = get_excel_data(structure_name, "abbreviations")
+    abbreviation_list = abbreviations["abbreviations"].unique()
     process_set = get_excel_data(structure_name, mode="network")
     unique_processes = process_set["process"].unique()
 
@@ -83,10 +86,13 @@ def network(request):
         request,
         "django_energysystem_viewer/network.html",
         {
-            "network_graph": ng.generate_Graph(process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=None).to_html(),
+            "network_graph": ng.generate_Graph(
+                process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=None
+            ).to_html(),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
+            "abbreviation_list": abbreviation_list,
         },
     )
 
@@ -102,15 +108,19 @@ def network_graph(request):
     nomenclature_level = int(request.GET.get("nomenclature_level"))
     # sep_agg = request.GET.get("seperate_join")
     return HttpResponse(
-        ng.generate_Graph(updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level).to_html()
+        ng.generate_Graph(
+            updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level
+        ).to_html()
     )
+
 
 class AggregationView(TemplateView):
     template_name = "django_energysystem_viewer/aggregation.html"
 
     def get_context_data(self, **kwargs):
-        structure_name = "SEDOS-structure-all.xlsx"
-        return {"structure_name": structure_name}
+        structure_name = "SEDOS-structure-all"
+        abbreviations = get_excel_data(structure_name, "abbreviations")
+        return {"structure_name": structure_name, "abbreviation_list": abbreviations["abbreviations"].unique()}
 
 
 def aggregation_graph(request):
@@ -121,6 +131,7 @@ def aggregation_graph(request):
     elements = ag.generate_aggregation_graph(df_aggregation_mapping, sectors, lod, process_list)
     return JsonResponse({"elements": elements}, safe=False)
 
+
 def write_lod_list(request):
     lod = int(request.GET["lod"])
     df_process_set, df_aggregation_mapping = get_excel_data("SEDOS-structure-all", mode="aggregation")
@@ -129,7 +140,7 @@ def write_lod_list(request):
 
     # Use an in-memory BytesIO stream instead of saving to disk
     output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='openpyxl')
+    writer = pd.ExcelWriter(output, engine="openpyxl")
     df_lod.to_excel(writer, index=False)
     writer.close()
     output.seek(0)
@@ -138,16 +149,6 @@ def write_lod_list(request):
     filename = f"aggregations_lod_{lod}.xlsx"
     response = FileResponse(output, as_attachment=True, filename=filename)
     return response
-
-def abbreviations(request):
-    structure_name = request.GET.get("structure")
-    abbreviations = get_excel_data(structure_name, "abbreviations")
-    abbreviation_list = abbreviations["abbreviations"].unique()
-    return render(
-        request,
-        "django_energysystem_viewer/abbreviation.html",
-        {"abbreviation_list": abbreviation_list, "structure_name": structure_name},
-    )
 
 
 def abbreviation_meaning(request):
@@ -195,6 +196,10 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
         context["collection_name"] = collection_name
         context["processes"] = processes
         context["banner_data"] = collection_name
+        structure_name = self.request.GET.get("structure")
+        context["structure_name"] = structure_name
+        abbreviations = get_excel_data(structure_name, "abbreviations")
+        context["abbreviation_list"] = abbreviations["abbreviations"].unique()
         return context
 
 
@@ -214,6 +219,11 @@ class ArtifactsView(TemplateView):
             "collection_url": collection_url,
             "artifacts": artifacts,
         }
+
+        structure_name = self.request.GET.get("structure")
+        context["structure_name"] = structure_name
+        abbreviations = get_excel_data(structure_name, "abbreviations")
+        context["abbreviation_list"] = abbreviations["abbreviations"].unique()
 
         # If specific artifact is queried
         artifact_name = self.request.GET.get("artifact")
