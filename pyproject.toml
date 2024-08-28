@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-energysystem-viewer"
-version = "0.7.0"
+version = "0.8.0"
 description = "Django app to examine energysystem network, aggregation and search abbreviations"
 authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
 license = "MIT"
