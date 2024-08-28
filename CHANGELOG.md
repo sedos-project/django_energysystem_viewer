@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project tries to adhere to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- option to download aggregation graph
+- legend to aggregation graph
+
+### Changed
+- abbreviations to header
+- simplified network graph options
+- fix structure at aggregation graph
+- color-based filtering in aggregation graph
+
+### Fixed
+- abbreviation error
+
 ## [0.7.0] - 2024-04-17
 ### Added
 - datatables for process and artifact view
