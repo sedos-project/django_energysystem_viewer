@@ -7,34 +7,37 @@
   <div class="container">
     <h3>Aggregation Graph</h3>
     <form id="aggregation_form">
-          <label for="lod">Choose the desired level of detail:</label>
-          <input type="radio" id="lod" name="lod" value=1>
-          <label for="lod">1</label>
-          <input type="radio" id="lod" name="lod" value=2 checked>
-          <label for="lod">2</label>
-          <input type="radio" id="lod" name="lod" value=3>
-          <label for="lod" style="margin-right: 100px;" >3</label>
-          <input type="hidden" name="structure" value="{{ structure_name }}" />
-          <label for="sectors">Choose Sector:</label>
-          <input type="radio" id="sectors" name="sectors" value="pow" checked>
-          <label for="sectors">Power</label>
-          <input type="radio" id="sectors" name="sectors" value="x2x">
-          <label for="sectors">X2X</label>
-          <input type="radio" id="sectors" name="sectors" value="hea">
-          <label for="sectors">Heat</label>
-          <input type="radio" id="sectors" name="sectors" value="ind">
-          <label for="sectors">Industry</label>
-          <input type="radio" id="sectors" name="sectors" value="tra">
-          <label for="sectors" style="margin-right: 100px;">Transport</label>
+      <label for="lod">Choose the desired level of detail:</label>
+      <input type="radio" id="lod" name="lod" value=1>
+      <label for="lod">1</label>
+      <input type="radio" id="lod" name="lod" value=2 checked>
+      <label for="lod">2</label>
+      <input type="radio" id="lod" name="lod" value=3>
+      <label for="lod" style="margin-right: 100px;">3</label>
+      <input type="hidden" name="structure" value="{{ structure_name }}" />
+      <label for="sectors">Choose Sector:</label>
+      <input type="radio" id="sectors" name="sectors" value="pow" checked>
+      <label for="sectors">Power</label>
+      <input type="radio" id="sectors" name="sectors" value="x2x">
+      <label for="sectors">X2X</label>
+      <input type="radio" id="sectors" name="sectors" value="hea">
+      <label for="sectors">Heat</label>
+      <input type="radio" id="sectors" name="sectors" value="ind">
+      <label for="sectors">Industry</label>
+      <input type="radio" id="sectors" name="sectors" value="tra">
+      <label for="sectors" style="margin-right: 100px;">Transport</label>
     </form>
     <div style="position: relative;">
       <div id="aggregation_graph" style="width: auto; height: 900px"></div>
-      <button id="download_button" style="position: absolute; top: 10px; left: 0px;">Download processes from all sectors for level of detail </button>
+      <button id="download_button" style="position: absolute; top: 10px; left: 0px">
+        Download processes from all sectors for level of detail
+      </button>
     </div>
   </div>
 {% endblock content %}
 
 {% block javascript %}
+  <script src="{% static "django_energysystem_viewer/libs/htmx.min.js" %}"></script>
   <script src="{% static 'vendors/cytoscape/js/cytoscape.min.js' %}"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function() {
