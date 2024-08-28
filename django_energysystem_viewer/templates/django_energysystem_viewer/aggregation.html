@@ -31,6 +31,10 @@
       <div id="aggregation_graph" style="width: auto; height: 900px"></div>
       <button id="download_button" style="position: absolute; top: 10px; left: 0px;">Download processes from all sectors for level of detail </button>
     </div>
+    <div id="legend" style="position: absolute; top: 120px; right: 300px; padding: 10px; border: 1px solid #ccc; background-color: #fff; border-radius: 5px;">
+    <!-- Legend content will be dynamically inserted here -->
+    </div>
+
   </div>
 {% endblock content %}
 
@@ -93,5 +97,60 @@
             window.location.href = downloadUrl;
             });
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+    const legendData = {
+        'pow': [
+            { text: 'renewable type', color: 'blue' },
+            { text: 'fuel/potential type', color: 'green' }
+        ],
+        'x2x': [
+            { text: 'technology type', color: 'green' }
+        ],
+        'hea': [
+            { text: 'technology type', color: 'blue' },
+            { text: 'building types', color: 'green' },
+        ],
+        'ind': [
+            { text: 'process route', color: 'brown' }
+        ],
+        'tra': [
+            { text: 'fuel type', color: 'red' },
+            { text: 'vehicle size', color: 'blue' },
+            { text: 'distance type', color: 'green' }
+        ]
+    };
+
+    const sectorNames = {
+        'pow': 'Power',
+        'x2x': 'X2X',
+        'hea': 'Heat',
+        'ind': 'Industry',
+        'tra': 'Transport'
+    };
+
+    const legendContainer = document.getElementById("legend");
+
+    function updateLegend(sector) {
+        const sectorFullName = sectorNames[sector];
+        legendContainer.innerHTML = `<strong>Aggregations ${sectorFullName} Sector</strong><br>`;
+        legendData[sector].forEach(item => {
+            legendContainer.innerHTML += `<span style="color: ${item.color};">${item.text}</span><br>`;
+        });
+    }
+
+    const aggregation_form = document.getElementById("aggregation_form");
+    aggregation_form.addEventListener("change", function() {
+        const sector = document.querySelector('input[name="sectors"]:checked').value;
+        updateLegend(sector);
+        updateAggregationGraph();
+    });
+
+    // Initialize the legend with the default sector
+    updateLegend(document.querySelector('input[name="sectors"]:checked').value);
+});
+
+
+
   </script>
 {% endblock javascript %}
