@@ -1,5 +1,4 @@
 import io
-
 import pandas as pd
 from data_adapter import collection, preprocessing
 from data_adapter import settings as adapter_settings
@@ -9,6 +8,8 @@ from django.views.generic import TemplateView
 
 from django_energysystem_viewer import aggregation_graph as ag
 from django_energysystem_viewer import network_graph as ng
+
+import plotly.offline as opy
 
 
 class SelectionView(TemplateView):
@@ -82,13 +83,20 @@ def network(request):
 
     # sort unique commodities alphabetically
     unique_commodities.sort()
+
+    # Generate the graph figure
+    fig = ng.generate_Graph(
+        process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=20  # Adjusted nomenclature_level
+    )
+
+    # Render the figure to an HTML div
+    plot_div = opy.plot(fig, auto_open=False, output_type='div')  # New code
+
     return render(
         request,
         "django_energysystem_viewer/network.html",
         {
-            "network_graph": ng.generate_Graph(
-                process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=None
-            ).to_html(),
+            "plot_div": plot_div,  # Updated key from "network_graph" to "plot_div"
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -98,20 +106,26 @@ def network(request):
 
 
 def network_graph(request):
-    # # load the process set, change the path if necessary
+    # Load the process set, change the path if necessary
     structure_name = request.GET.get("structure")
     updated_process_set = get_excel_data(structure_name, mode="network")
     sectors = request.GET.getlist("sectors")
-    mapping = request.GET["mapping"]
+    mapping = request.GET.get("mapping", "fr")  # Default to 'fr' if not provided
     process = request.GET.get("process")
     commodity = request.GET.get("commodity")
-    nomenclature_level = int(request.GET.get("nomenclature_level"))
+    nomenclature_level = int(request.GET.get("nomenclature_level", 20))  # Default to 20 if not provided
     # sep_agg = request.GET.get("seperate_join")
-    return HttpResponse(
-        ng.generate_Graph(
-            updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level
-        ).to_html()
+
+    # Generate the graph figure
+    fig = ng.generate_Graph(
+        updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level
     )
+
+    # Render the figure to an HTML div
+    plot_div = opy.plot(fig, auto_open=False, output_type='div')  # New code
+
+    # Return the HTML div as an HttpResponse
+    return HttpResponse(plot_div)  # Updated code
 
 
 class AggregationView(TemplateView):
@@ -262,16 +276,16 @@ class ArtifactDetailView(TemplateView):
 
 class JsonWidget:
     """
-    render JSON data into HTML with indention depending on the level of nesting
+    Render JSON data into HTML with indentation depending on the level of nesting.
 
     Methods
     ----------
-    __init(json: dict)
+    __init__(json: dict)
          Initializes the JsonWidget object with the provided JSON data (dict).
     __convert_to_html(data, level=0)
-        Converts the JSON data to HTML format, with indention depending on the level, starting at 0.
+        Converts the JSON data to HTML format, with indentation depending on the level, starting at 0.
     render()
-        Necessary for rendering the html structure in the django template.
+        Necessary for rendering the HTML structure in the Django template.
     """
 
     def __init__(self, json: dict):
@@ -302,8 +316,8 @@ class JsonWidget:
 
     def render(self):
         header = ""
-        if self.json["title"] != "":
+        if self.json.get("title"):
             header += f'<p class="lead">{self.json["title"]}</p>'
-        if self.json["description"] != "":
+        if self.json.get("description"):
             header += f'<p>{self.json["description"]}</p>'
         return header + self.__convert_to_html(data=self.json)
