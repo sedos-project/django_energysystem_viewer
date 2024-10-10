@@ -1,24 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="container">
-    <p>Abbreviation Help:</p>
-    <form hx-get="/energysystem/abbreviation_meaning"
-          hx-target="#meaning"
-          hx-swap="innerhtml"
-          hx-trigger="input">
-      <label for="abbreviation"></label>
-      <input list="abbreviations"
-             id="abbreviation"
-             name="abbreviation"
-             placeholder="Enter or select abbreviation...">
-      <datalist id="abbreviations">
-        {% for abb in abbreviation_list %}<option value="{{ abb }}"></option>{% endfor %}
-      </datalist>
-      <input type="hidden" name="structure" value="{{ structure_name }}">
-    </form>
-    <div id="meaning"></div>
-  </div>
   <div class="alert alert-info alert-dismissible fade show" role="alert">
     {% if structure_name %}Current structure: {{ structure_name }}{% endif %}
     {% if collection_name %}Current collection: {{ collection_name }}{% endif %}
