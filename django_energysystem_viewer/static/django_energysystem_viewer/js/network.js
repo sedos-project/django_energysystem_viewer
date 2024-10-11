@@ -81,6 +81,21 @@ function attachPlotlyClickEvents(graphDiv) {
   });
 }
 
+function highlightEdge(edgeIndex, edgeTraceIndex) {
+  var originalDash = originalStyles.edgeDashes[edgeIndex];
+  var color = (edgeIndex === edgeTraceIndex) ? 'red' : 'orange';
+  var width = (edgeIndex === edgeTraceIndex) ? 4 : 3;
+
+  Plotly.restyle(graphDiv, {
+    'line.color': color,
+    'line.width': width,
+    'line.dash': originalDash // Preserve the original dash style
+  }, [edgeIndex]);
+
+  // Store for reset
+  previousHighlights.push({type: 'edge', traceIndex: edgeIndex});
+}
+
 function highlightConnectedElements(graphDiv, nodeId = null, connectedNodeIds = null, edgeTraceIndex = null) {
   var data = graphDiv.data;
   var nodesToHighlight = new Set();
@@ -96,7 +111,7 @@ function highlightConnectedElements(graphDiv, nodeId = null, connectedNodeIds = 
         // Edges
         var edgeData = trace.customdata[0];
         if (edgeData && (edgeData.source === nodeId || edgeData.target === nodeId)) {
-          edgesToHighlight.add(traceIndex);
+          highlightEdge(traceIndex, edgeTraceIndex);
           // Add connected nodes
           nodesToHighlight.add(edgeData.source);
           nodesToHighlight.add(edgeData.target);
@@ -105,7 +120,7 @@ function highlightConnectedElements(graphDiv, nodeId = null, connectedNodeIds = 
     });
   } else if (edgeTraceIndex !== null) {
     // Edge is clicked
-    edgesToHighlight.add(edgeTraceIndex);
+    highlightEdge(edgeTraceIndex, edgeTraceIndex);
     var edgeData = data[edgeTraceIndex].customdata[0];
     if (edgeData) {
       nodesToHighlight.add(edgeData.source);
@@ -143,22 +158,6 @@ function highlightConnectedElements(graphDiv, nodeId = null, connectedNodeIds = 
       // Store for reset
       previousHighlights.push({type: 'node', traceIndex: traceIndex});
     }
-  });
-
-  // Highlight edges
-  edgesToHighlight.forEach(function(edgeIndex) {
-    var originalDash = originalStyles.edgeDashes[edgeIndex];
-    var color = (edgeIndex === edgeTraceIndex) ? 'red' : 'orange';
-    var width = (edgeIndex === edgeTraceIndex) ? 4 : 3;
-
-    Plotly.restyle(graphDiv, {
-      'line.color': color,
-      'line.width': width,
-      'line.dash': originalDash // Preserve the original dash style
-    }, [edgeIndex]);
-
-    // Store for reset
-    previousHighlights.push({type: 'edge', traceIndex: edgeIndex});
   });
 }
 
