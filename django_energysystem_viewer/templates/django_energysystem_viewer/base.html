@@ -2,8 +2,8 @@
 
 {% block content %}
   <div class="alert alert-light alert-dismissible fade show" role="alert">
-    <div class="d-flex flex-row align-items-center">
-      {% if structure_name %}Current structure: <span class="fw-bold ps-2">{{ structure_name }}</span>{% endif %}
+    <div class="d-flex flex-row align-items-center justify-content-center">
+      {% if structure_name %}Current structure: <span class="fw-bold ps-2 pe-4">{{ structure_name }}</span>{% endif %}
       {% if collection_name %}Current collection: <span class="fw-bold ps-2">{{ collection_name }}</span>{% endif %}
       <form action="{% url 'django_energysystem_viewer:selection' %}">
         <button class="btn btn-link ms-2" data-bs-dismiss="offcanvas">Change selection</button>
