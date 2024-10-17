@@ -4,37 +4,69 @@
 
 {% block content %}
   {{ block.super }}
-  <div class="container">
-    <h3>Aggregation Graph</h3>
-    <form id="aggregation_form">
-      <label for="lod">Choose the desired level of detail:</label>
-      <input type="radio" id="lod" name="lod" value=1>
-      <label for="lod">1</label>
-      <input type="radio" id="lod" name="lod" value=2 checked>
-      <label for="lod">2</label>
-      <input type="radio" id="lod" name="lod" value=3>
-      <label for="lod" style="margin-right: 100px;">3</label>
-      <input type="hidden" name="structure" value="{{ structure_name }}" />
-      <label for="sectors">Choose Sector:</label>
-      <input type="radio" id="sectors" name="sectors" value="pow" checked>
-      <label for="sectors">Power</label>
-      <input type="radio" id="sectors" name="sectors" value="x2x">
-      <label for="sectors">X2X</label>
-      <input type="radio" id="sectors" name="sectors" value="hea">
-      <label for="sectors">Heat</label>
-      <input type="radio" id="sectors" name="sectors" value="ind">
-      <label for="sectors">Industry</label>
-      <input type="radio" id="sectors" name="sectors" value="tra">
-      <label for="sectors" style="margin-right: 100px;">Transport</label>
-    </form>
-    <div style="position: relative;">
-      <div id="aggregation_graph" style="width: auto; height: 900px"></div>
-      <button id="download_button" style="position: absolute; top: 10px; left: 0px">
-        Download processes from all sectors for level of detail
-      </button>
+  <div class="container aggregation">
+    <h1>Aggregation Graph</h1>
+    <div class="aggregation__options">
+      <form id="aggregation_form">
+        <label for="lod" class="pe-1">Desired level of detail:</label>
+        <span class="pe-1">
+          <input type="radio" id="lod" name="lod" value=1>
+          <label for="lod">1</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="lod" name="lod" value=2 checked>
+          <label for="lod">2</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="lod" name="lod" value=3>
+          <label for="lod" class="pe-5">3</label>
+        </span>
+        <span class="pe-1">
+          <input type="hidden" name="structure" value="{{ structure_name }}" />
+          <label for="sectors">Sector:</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="sectors" name="sectors" value="pow" checked>
+          <label for="sectors">Power</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="sectors" name="sectors" value="x2x">
+          <label for="sectors">X2X</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="sectors" name="sectors" value="hea">
+          <label for="sectors">Heat</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="sectors" name="sectors" value="ind">
+          <label for="sectors">Industry</label>
+        </span>
+        <span class="pe-1">
+          <input type="radio" id="sectors" name="sectors" value="tra">
+          <label for="sectors" class="pe-5">Transport</label>
+        </span>
+      </form>
+      <div class="aggregation__button">
+        <span class="pe-2">
+          Processes from all sectors for level of detail:
+        </span>
+        <button id="download_button" class="btn button button--secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+          </svg>
+          <span class="ps-2">
+            Download
+          </span>
+        </button>
+      </div>
     </div>
-    <div id="legend" style="position: absolute; top: 120px; right: 300px; padding: 10px; border: 1px solid #ccc; background-color: #fff; border-radius: 5px;">
-    <!-- Legend content will be dynamically inserted here -->
+    
+    <div class="aggregation__graph">
+      <div id="aggregation_graph" style="width: auto; height: 900px"></div>
+      <div id="legend">
+        <!-- Legend content will be dynamically inserted here -->
+        </div>
     </div>
 
   </div>
@@ -136,9 +168,13 @@
 
     function updateLegend(sector) {
         const sectorFullName = sectorNames[sector];
-        legendContainer.innerHTML = `<strong>Aggregations ${sectorFullName} Sector</strong><br>`;
+        legendContainer.innerHTML = `<div class="pb-2">Aggregations ${sectorFullName} Sector:</div>`;
         legendData[sector].forEach(item => {
-            legendContainer.innerHTML += `<span style="color: ${item.color};">${item.text}</span><br>`;
+            legendContainer.innerHTML += 
+            `<div class="d-flex align-items-center">
+            <span style="margin-right: 0.5rem; height: 0.75rem; width: 0.75rem; border-radius: 0.75rem; background-color: ${item.color}"></span>
+            <span style="color: ${item.color};">${item.text}</span>
+            </div>`;
         });
     }
 

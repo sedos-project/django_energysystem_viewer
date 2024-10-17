@@ -1,34 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>Selections:</h1>
-  <form method="get">
-    {% csrf_token %}
-    <div>
-      <label for="structures">Structure</label>
-      <select class="form-select" id="structure" name="structure">
-        {% for structure in structure_list %}<option label="{{ structure }}">{{ structure }}</option>{% endfor %}
-      </select>
-    </div>
-    <div>
-      <label for="collection">Collection</label>
-      <select class="form-select" id="collection" name="collection">
-        {% for collection in collection_list %}<option label="{{ collection }}">{{ collection }}</option>{% endfor %}
-      </select>
-    </div>
-    <div>
-      <button class="btn btn-primary"
-              type="submit"
-              formaction="{% url 'django_energysystem_viewer:aggregations' %}">Look at Aggregation</button>
-      <button class="btn btn-primary"
-              type="submit"
-              formaction="{% url 'django_energysystem_viewer:networks' %}">Look at Network</button>
-      <button class="btn btn-primary"
-              type="submit"
-              formaction="{% url 'django_energysystem_viewer:processes' %}">Look at Processes</button>
-      <button class="btn btn-primary"
-              type="submit"
-              formaction="{% url 'django_energysystem_viewer:artifacts' %}">Look at Artifacts</button>
-    </div>
-  </form>
+  <div class="selection">
+    <h1>Selections:</h1>
+    <form method="get">
+      {% csrf_token %}
+      <div class="selection__item">
+        <label for="structures">Structure</label>
+        <select class="form-select" id="structure" name="structure">
+          {% for structure in structure_list %}<option label="{{ structure }}">{{ structure }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="selection__item">
+        <label for="collection">Collection</label>
+        <select class="form-select" id="collection" name="collection">
+          {% for collection in collection_list %}<option label="{{ collection }}">{{ collection }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="selection__item">
+        <button class="btn button button--primary"
+                type="submit"
+                formaction="{% url 'django_energysystem_viewer:aggregations' %}">Look at Aggregation</button>
+        <button class="btn button button--primary"
+                type="submit"
+                formaction="{% url 'django_energysystem_viewer:networks' %}">Look at Network</button>
+        <button class="btn button button--primary"
+                type="submit"
+                formaction="{% url 'django_energysystem_viewer:processes' %}">Look at Processes</button>
+        <button class="btn button button--primary"
+                type="submit"
+                formaction="{% url 'django_energysystem_viewer:artifacts' %}">Look at Artifacts</button>
+      </div>
+    </form>
+  </div>
 {% endblock content %}

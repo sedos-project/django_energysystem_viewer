@@ -41,7 +41,9 @@
     {% if data %}
       {{ data | safe }}
     {% else %}
+    <div class="tab-content--empty">
       Select artifact to show related data
+    </div>
     {% endif %}
   </div>
   <div class="tab-pane fade"
@@ -51,7 +53,9 @@
     {% if metadata %}
       {{ metadata | safe }}
     {% else %}
+    <div class="tab-content--empty">
       Select artifact to show related metadata
+    </div>
     {% endif %}
   </div>
 </div>

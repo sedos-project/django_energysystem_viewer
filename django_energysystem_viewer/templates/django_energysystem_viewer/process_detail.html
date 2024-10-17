@@ -39,7 +39,9 @@
     {% if scalars %}
       {{ scalars | safe }}
     {% else %}
-      Select process to show related scalar data
+      <div class="tab-content--empty">
+        Select process to show related scalar data
+      </div>
     {% endif %}
   </div>
   <div class="tab-pane fade"
@@ -49,7 +51,9 @@
     {% if timeseries %}
       {{ timeseries | safe }}
     {% else %}
-      Select process to show related timeseries data
+      <div class="tab-content--empty">
+        Select process to show related timeseries data
+      </div>
     {% endif %}
   </div>
 </div>
