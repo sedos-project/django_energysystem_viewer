@@ -4,11 +4,11 @@
 {% block content %}
   {{ block.super }}
   <div class="container dashboard">
-    <div class="row">
+    <h1>Network Graph</h1>
+    <div class="row" style="padding-left: 0.75rem">
       <div class="col-md-3 dashboard__controls">
         <!-- Network Graph Forms -->
         <div class="row">
-          <h3>Network Graph</h3>
           <form hx-get="/energysystem/network_graph"
                 hx-target="#network_graph"
                 hx-trigger="change">
