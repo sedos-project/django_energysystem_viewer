@@ -3,9 +3,9 @@
 
 {% block content %}
   {{ block.super }}
-  <div class="container">
+  <div class="container dashboard">
     <div class="row">
-      <div class="col-md-2">
+      <div class="col-md-3 dashboard__controls">
         <!-- Network Graph Forms -->
         <div class="row">
           <h3>Network Graph</h3>
@@ -13,53 +13,60 @@
                 hx-target="#network_graph"
                 hx-trigger="change">
             <input type="hidden" name="structure" value="{{ structure_name }}" />
-
-            <label for="sectors">Sectors:</label>
-            <select id="sectors" name="sectors" multiple>
-              <option label="Power" value="pow" selected></option>
-              <option label="X2X" value="x2x" selected></option>
-              <option label="Industry" value="ind"></option>
-              <option label="Transport" value="tra"></option>
-              <option label="Heat" value="hea"></option>
-              <option label="Helper" value="hel"></option>
-            </select>
-            <br>
+            <div class="control">
+              <label for="sectors">Sectors:</label>
+              <select id="sectors" name="sectors" multiple>
+                <option label="Power" value="pow" selected></option>
+                <option label="X2X" value="x2x" selected></option>
+                <option label="Industry" value="ind"></option>
+                <option label="Transport" value="tra"></option>
+                <option label="Heat" value="hea"></option>
+                <option label="Helper" value="hel"></option>
+              </select>
+            </div>
+            <div class="control">
               <label for="nomenclature_level">Complexity:</label>
               <select id="nomenclature_level" name="nomenclature_level">
-              <option label="full" value=20 selected></option>
-              <option label="reduced" value=3></option>
-              <option label="simple" value=2></option>
-            </select>
-            <label for="mapping">Mapping:</label>
-            <select id="mapping" name="mapping">
-              <option label="kk" value="kk"></option>
-              <option label="fr" value="fr" selected></option>
-              <option label="go" value="go"></option>
-            </select>
-            <br>
+                <option label="full" value=20 selected></option>
+                <option label="reduced" value=3></option>
+                <option label="simple" value=2></option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="mapping">Mapping:</label>
+              <select id="mapping" name="mapping">
+                <option label="kk" value="kk"></option>
+                <option label="fr" value="fr" selected></option>
+                <option label="go" value="go"></option>
+              </select>
+            </div>  
             <div id="proc_comm"
                  _="on input if #process.value add @disabled to #commodity else remove @disabled from #commodity end on input if #commodity.value add @disabled to #process else remove @disabled from #process">
-              <label for="process">Display specific process:</label>
-              <input list="processes"
-                     id="process"
-                     name="process"
-                     placeholder="Enter or select process...">
-              <datalist id="processes">
+              <div class="control">
+                <label for="process">Display specific process:</label>
+                <input list="processes"
+                       id="process"
+                       name="process"
+                       placeholder="Enter or select process...">
+                <datalist id="processes">
                 {% for process in unique_processes %}<option value="{{ process }}"></option>{% endfor %}
               </datalist>
-              <label for="commodity">Display specific commodity:</label>
-              <input list="commodities"
-                     id="commodity"
-                     name="commodity"
-                     placeholder="Enter or select commodity...">
-              <datalist id="commodities">
-                {% for commodity in unique_commodities %}<option value="{{ commodity }}"></option>{% endfor %}
-              </datalist>
+              </div>
+              <div class="control">
+                <label for="commodity">Display specific commodity:</label>
+                <input list="commodities"
+                       id="commodity"
+                       name="commodity"
+                       placeholder="Enter or select commodity...">
+                <datalist id="commodities">
+                  {% for commodity in unique_commodities %}<option value="{{ commodity }}"></option>{% endfor %}
+                </datalist>
+              </div>
             </div>
           </form>
         </div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-9 dashboard__graph">
         <div id="network_graph" style="min-height: 500px;">
           <!-- Network Graph Will Be Loaded Here -->
         </div>
