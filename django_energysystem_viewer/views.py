@@ -153,7 +153,7 @@ def write_lod_list(request):
 
 def abbreviation_meaning(request):
     abb = request.GET.get("abbreviation")
-    structure_name = request.GET.get("structure")
+    structure_name = "SEDOS-structure-all"
     abbreviations = get_excel_data(structure_name, "abbreviations")
     if abb:
         meaning = abbreviations[abbreviations["abbreviations"] == abb]["meaning"].values
