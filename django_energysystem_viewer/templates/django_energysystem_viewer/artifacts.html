@@ -4,12 +4,27 @@
 
 {% block content %}
   {{ block.super }}
-  <div class="container">
-    <h1>Collection "{{ collection_name }}"</h1>
-    <a class="btn btn-primary" href="{{ collection_url }}">View collection</a>
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-4">
+  <div class="container process">
+    <header class="process__header">
+      <h1>Collection "{{ collection_name }}"</h1>
+      <a href="{{ collection_url }}"
+          class="mb-4 button button--link"
+          target="_blank">
+        <span class="pe-2">View collection</span>
+        <svg xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-box-arrow-up-right"
+              viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5" />
+          <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z" />
+        </svg>
+      </a>
+    </header>
+    <div class="container process__main">
+      <div class="d-flex flex-row">
+        <section class="process__sidebar">
           {% regroup artifacts by group as artifacts_grouped %}
           {% for group in artifacts_grouped %}
             <h2>{{ group.grouper }}</h2>
@@ -23,8 +38,8 @@
               {% endfor %}
             </ul>
           {% endfor %}
-        </div>
-        <div class="col-8" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</div>
+        </section>
+        <section class="process__graph" id="artifact-detail">{% include "django_energysystem_viewer/artifact_detail.html" %}</section>
       </div>
     </div>
   </div>
