@@ -56,7 +56,7 @@ def write_excel_data(data: pd.DataFrame, dir: str):
 
 def network(request):
     structure_name = request.GET.get("structure")
-    abbreviations = get_excel_data(structure_name, "abbreviations")
+    abbreviations = get_excel_data("SEDOS-structure-all", "abbreviations")
     abbreviation_list = abbreviations["abbreviations"].unique()
     process_set = get_excel_data(structure_name, mode="network")
     unique_processes = process_set["process"].unique()
