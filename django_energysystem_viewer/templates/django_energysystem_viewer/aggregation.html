@@ -5,8 +5,19 @@
 {% block content %}
   {{ block.super }}
   <div class="container aggregation">
-    <h1>Aggregation Graph</h1>
-    <div class="aggregation__options">
+    <h1 class="d-flex align-items-center">
+      <svg width="32" height="32" viewBox="0 0 134 134" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="67" cy="67" r="66" fill="#DDDCF3"/>
+        <rect x="85.9707" y="76.6569" width="16" height="16" transform="rotate(45 85.9707 76.6569)" stroke="black" stroke-width="8"/>
+        <rect x="43.9707" y="76.6569" width="16" height="16" transform="rotate(45 43.9707 76.6569)" stroke="black" stroke-width="8"/>
+        <rect x="85.9707" y="53.6569" width="16" height="16" transform="rotate(45 85.9707 53.6569)" stroke="black" stroke-width="8"/>
+        <rect x="43.9707" y="54.6569" width="16" height="16" transform="rotate(45 43.9707 54.6569)" stroke="black" stroke-width="8"/>
+        <rect x="85.9707" y="30.6569" width="16" height="16" transform="rotate(45 85.9707 30.6569)" stroke="black" stroke-width="8"/>
+      </svg>
+      <span class="ms-3">
+        Aggregation Graph
+      </span>
+    </h1>
       <form id="aggregation_form">
         <label for="lod" class="pe-1">Desired level of detail:</label>
         <span class="pe-1">
