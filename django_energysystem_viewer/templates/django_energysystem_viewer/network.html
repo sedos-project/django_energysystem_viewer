@@ -14,7 +14,7 @@
       </span>
     </h1>
     <div class="row" style="padding-left: 0.75rem">
-      <div class="col-md-3 dashboard__controls">
+      <section class="col-md-3 dashboard__controls">
         <!-- Network Graph Forms -->
         <div class="row">
           <form hx-get="/energysystem/network_graph"
@@ -73,13 +73,12 @@
             </div>
           </form>
         </div>
-      </div>
-      <div class="col-md-9 dashboard__graph">
+      </section>
+      <section class="col-md-9 dashboard__graph">
         <div id="network_graph" style="min-height: 500px;">
           <!-- Network Graph Will Be Loaded Here -->
         </div>
-      </div>
-      </div>
+      </section>
     </div>
   </div>
 {% endblock content %}

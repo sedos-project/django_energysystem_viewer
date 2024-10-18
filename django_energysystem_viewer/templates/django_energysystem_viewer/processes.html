@@ -5,7 +5,7 @@
 {% block content %}
   {{ block.super }}
   <div class="container process">
-    <div class="process__header">
+    <header class="process__header">
       <h1>Collection "{{ collection_name }}"</h1>
       <a href="{{ collection_url }}"
           class="mb-4 button button--link"
@@ -21,10 +21,10 @@
           <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z" />
         </svg>
       </a>
-    </div>
+    </header>
     <div class="container process__main">
       <div class="d-flex flex-row">
-        <div class="process__sidebar">
+        <section class="process__sidebar">
           <ul>
             {% for process in processes %}
               <li>
@@ -34,8 +34,8 @@
               </li>
             {% endfor %}
           </ul>
-        </div>
-        <div class="process__graph" id="process-detail">{% include "django_energysystem_viewer/process_detail.html" %}</div>
+        </section>
+        <section class="process__graph" id="process-detail">{% include "django_energysystem_viewer/process_detail.html" %}</section>
       </div>
     </div>
   </div>
