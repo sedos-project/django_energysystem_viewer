@@ -198,7 +198,7 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
         context["banner_data"] = collection_name
         structure_name = self.request.GET.get("structure")
         context["structure_name"] = structure_name
-        abbreviations = get_excel_data(structure_name, "abbreviations")
+        abbreviations = get_excel_data("SEDOS-structure-all", "abbreviations")
         context["abbreviation_list"] = abbreviations["abbreviations"].unique()
         return context
 
@@ -222,7 +222,7 @@ class ArtifactsView(TemplateView):
 
         structure_name = self.request.GET.get("structure")
         context["structure_name"] = structure_name
-        abbreviations = get_excel_data(structure_name, "abbreviations")
+        abbreviations = get_excel_data("SEDOS-structure-all", "abbreviations")
         context["abbreviation_list"] = abbreviations["abbreviations"].unique()
 
         # If specific artifact is queried
