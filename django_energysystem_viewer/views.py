@@ -88,7 +88,7 @@ def network(request):
         {
             "network_graph": ng.generate_Graph(
                 process_set, ["pow", "x2x"], "fr", "agg", None, None, nomenclature_level=None
-            ).to_html(),
+            ).to_html(config = {'toImageButtonOptions': {'format': 'svg'}}),
             "unique_processes": unique_processes,
             "unique_commodities": unique_commodities,
             "structure_name": structure_name,
@@ -110,7 +110,7 @@ def network_graph(request):
     return HttpResponse(
         ng.generate_Graph(
             updated_process_set, sectors, mapping, "agg", process, commodity, nomenclature_level
-        ).to_html()
+        ).to_html(config = {'toImageButtonOptions': {'format': 'svg'}})
     )
 
 

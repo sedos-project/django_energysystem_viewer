@@ -150,7 +150,6 @@ def generate_df_lod(df_aggregation_mapping, lod, process_list):
     sectors = ["pow", "x2x", "hea", "ind", "tra"]
     for sector in sectors:
         nodes, edges = generate_elements(df_aggregation_mapping, lod, sector, process_list)
-        # filter_elements(nodes, edges, lod)
         edge_sources_list = [item['data']['source'] for item in edges]
         lod_list = [item['data']['id'] for item in nodes if item['data']['id'] not in edge_sources_list]
         df_lod = pd.concat([df_lod, pd.Series(lod_list, name=sector)], axis=1)
@@ -247,7 +246,6 @@ def create_edges(df_aggregation_mapping, agg_list, sector, nodes, aggregation_le
             edges.append({"data": {"source": sector, "target": node}})
 
     assign_levels(nodes, edges)
-    filter_elements(nodes, edges, level_of_detail)
 
     for edge in edges:
         for level in range(3, 0, -1):
@@ -277,27 +275,6 @@ def assign_levels(nodes, edges):
             if source_node["level_of_detail"] != -1 and target_node["level_of_detail"] != source_node["level_of_detail"] + 1:
                 target_node["level_of_detail"] = source_node["level_of_detail"] + 1
                 changed = True
-
-
-def filter_elements(nodes, edges, level_of_detail):
-    """Filters out elements based on the level of detail.
-
-    Parameters
-    ----------
-    nodes: list
-        The list of nodes.
-    edges: list
-        The list of edges.
-    level_of_detail: int
-        The desired level of detail.
-    """
-    edges[:] = [edge for edge in edges if all(
-        node["level_of_detail"] <= level_of_detail
-        for node in nodes
-        if node["data"]["id"] in (edge["data"]["source"], edge["data"]["target"])
-    )]
-
-    nodes[:] = [node for node in nodes if node["level_of_detail"] <= level_of_detail]
 
 
 def elements_after_collapse(collapsed_nodes, nodes, edges):
