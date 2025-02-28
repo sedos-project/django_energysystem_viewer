@@ -231,9 +231,9 @@ class ArtifactsView(TemplateView):
         version = self.request.GET.get("version")
         if artifact_name and group_name:
             artifact = collection.get_artifact_from_collection(collection_name, group_name, artifact_name, version)
-            context["processes"] = collection.get_collection_meta(collection_name)["artifacts"][group_name][
+            context["processes"] = set(collection.get_collection_meta(collection_name)["artifacts"][group_name][
                 artifact_name
-            ]["names"]
+            ]["names"])
             context["data"] = artifact.data.to_html()
             metadataWidget = JsonWidget(artifact.metadata)
             context["metadata"] = metadataWidget.render()
