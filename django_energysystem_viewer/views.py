@@ -194,7 +194,8 @@ class ProcessesView(ProcessDetailMixin, TemplateView):
         collection_name = self.request.GET.get("collection")
         processes = collection.get_processes_from_collection(collection_name)
         context["collection_name"] = collection_name
-        context["processes"] = processes
+        # filter in list comprehension is due to "nan" value, which breaks sorting
+        context["processes"] = sorted([item for item in processes if not isinstance(item, float)])
         context["banner_data"] = collection_name
         structure_name = self.request.GET.get("structure")
         context["structure_name"] = structure_name
