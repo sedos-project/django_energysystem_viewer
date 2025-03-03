@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-energysystem-viewer"
-version = "0.10.0"
+version = "0.10.1"
 description = "Django app to examine energysystem network, aggregation and search abbreviations"
 authors = ["Hendrik Huyskens <hendrik.huyskens@rl-institut.de>"]
 license = "MIT"
@@ -20,7 +20,7 @@ json2table = "^1.1.5"
 [tool.poetry.group.dev.dependencies]
 django = "^4.2.4"
 pre-commit = "^3.4.0"
-django-environ = "0.10.0"
+django-environ = "0.10.1"
 psycopg = {version = "3.1.9", extras = ["c"]}
 bump-my-version = "^0.18.3"
 
